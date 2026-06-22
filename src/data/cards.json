@@ -1,0 +1,242 @@
+[
+  {
+    "id": "c001",
+    "words": {
+      "People": "Mohanlal",
+      "Location": "Kochi",
+      "Object": "Chenda",
+      "Movie": "Drishyam",
+      "Nature": "Thenga",
+      "Random": "Hartal"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c002",
+    "words": {
+      "People": "Mammootty",
+      "Location": "Trivandrum",
+      "Object": "Matta",
+      "Movie": "Manichithrathazhu",
+      "Nature": "Kariveppu",
+      "Random": "Bandh"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c003",
+    "words": {
+      "People": "Prithviraj",
+      "Location": "Munnar",
+      "Object": "Veena",
+      "Movie": "Premam",
+      "Nature": "Teak tree",
+      "Random": "Sadhya"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c004",
+    "words": {
+      "People": "Dileep",
+      "Location": "Guruvayur",
+      "Object": "Kathakali mask",
+      "Movie": "Minnaram",
+      "Nature": "Elephant",
+      "Random": "Thiruvathira"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c005",
+    "words": {
+      "People": "Fahadh Faasil",
+      "Location": "Varkala",
+      "Object": "Chembu",
+      "Movie": "Bangalore Days",
+      "Nature": "Peacock",
+      "Random": "Vishu"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c006",
+    "words": {
+      "People": "Parvathy",
+      "Location": "Alappuzha",
+      "Object": "Kettuvallam",
+      "Movie": "Charlie",
+      "Nature": "Paddy field",
+      "Random": "Onam"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c007",
+    "words": {
+      "People": "Dulquer Salmaan",
+      "Location": "Thrissur",
+      "Object": "Umbrella",
+      "Movie": "OK Kanmani",
+      "Nature": "Mango tree",
+      "Random": "Boat race"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c008",
+    "words": {
+      "People": "Jayaram",
+      "Location": "Palakkad",
+      "Object": "Uruli",
+      "Movie": "Kilukkam",
+      "Nature": "Hibiscus",
+      "Random": "Kudumbasree"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c009",
+    "words": {
+      "People": "Shobhana",
+      "Location": "Wayanad",
+      "Object": "Nettipattam",
+      "Movie": "Thoovanathumbikal",
+      "Nature": "Jackfruit",
+      "Random": "Vallam kali"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c010",
+    "words": {
+      "People": "Suresh Gopi",
+      "Location": "Kozhikode",
+      "Object": "Achappam",
+      "Movie": "Commissioner",
+      "Nature": "Tiger",
+      "Random": "Pooram"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c011",
+    "words": {
+      "People": "Kavya Madhavan",
+      "Location": "Ernakulam",
+      "Object": "Thazhampoo",
+      "Movie": "Christian Brothers",
+      "Nature": "Banyan tree",
+      "Random": "Attukal pongala"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c012",
+    "words": {
+      "People": "Biju Menon",
+      "Location": "Idukki",
+      "Object": "Palayam",
+      "Movie": "Ordinary",
+      "Nature": "Kingfisher",
+      "Random": "Puthuchery"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c013",
+    "words": {
+      "People": "Indrajith",
+      "Location": "Kasaragod",
+      "Object": "Thorthu",
+      "Movie": "Thanmathra",
+      "Nature": "Bamboo",
+      "Random": "Pulikali"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c014",
+    "words": {
+      "People": "Manju Warrier",
+      "Location": "Kannur",
+      "Object": "Uriyadi",
+      "Movie": "How Old Are You",
+      "Nature": "Lotus",
+      "Random": "Theyyam"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c015",
+    "words": {
+      "People": "Tovino Thomas",
+      "Location": "Kottayam",
+      "Object": "Pavadam",
+      "Movie": "Godha",
+      "Nature": "Backwaters",
+      "Random": "Kottiyoor"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c016",
+    "words": {
+      "People": "Nivin Pauly",
+      "Location": "Periyar",
+      "Object": "Kozhalappam",
+      "Movie": "1983",
+      "Nature": "King cobra",
+      "Random": "Vallom"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c017",
+    "words": {
+      "People": "Vineeth Sreenivasan",
+      "Location": "Thrissur Pooram ground",
+      "Object": "Ottanthullal costume",
+      "Movie": "Thattathin Marayathu",
+      "Nature": "Spotted deer",
+      "Random": "Kummatti"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c018",
+    "words": {
+      "People": "Mukesh",
+      "Location": "Padmanabhaswamy temple",
+      "Object": "Murikku",
+      "Movie": "In Harihar Nagar",
+      "Nature": "Vayal",
+      "Random": "Aranmula mirror"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c019",
+    "words": {
+      "People": "Lal",
+      "Location": "Kappad beach",
+      "Object": "Kukku",
+      "Movie": "Chattambinadu",
+      "Nature": "Monitor lizard",
+      "Random": "Kolkali"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c020",
+    "words": {
+      "People": "Siddique",
+      "Location": "Silent Valley",
+      "Object": "Aval",
+      "Movie": "In Ghost House Inn",
+      "Nature": "Monsoon",
+      "Random": "Kathakali"
+    },
+    "chakraCategory": "Random"
+  }
+]
