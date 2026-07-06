@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react'
 import {
-  Alert,
   Modal,
   ScrollView,
   StyleSheet,
@@ -13,16 +12,45 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useGame } from '@/store/GameContext'
 import { CardStack } from '@/components/card/CardStack'
+import { ChakraRound } from '@/components/chakra/ChakraRound'
+import { CategoryBar } from '@/components/ui/CategoryBar'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { TeamScoreBar } from '@/components/ui/TeamScoreBar'
-import { CATEGORIES, CATEGORY_COLOURS } from '@/constants/categories'
+import { CATEGORY_COLOURS } from '@/constants/categories'
 import { BORDER_RADIUS, COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
-import type { Category, Team } from '@/types/game'
+import type { Card, Category, Team } from '@/types/game'
+
+/** Which destructive action is awaiting confirmation. */
+type PendingConfirm = 'undo' | 'end' | 'restart' | null
+
+const CONFIRM_COPY: Record<Exclude<PendingConfirm, null>, {
+  title: string
+  message: string
+  confirmLabel: string
+}> = {
+  undo: {
+    title: 'Undo Last Turn',
+    message: 'This will reverse the previous turn — scores, cards, and team order will be restored.',
+    confirmLabel: 'Undo',
+  },
+  end: {
+    title: 'End Game',
+    message: 'Are you sure you want to end the game? Final scores will be shown.',
+    confirmLabel: 'End Game',
+  },
+  restart: {
+    title: 'Restart Turn',
+    message: 'Discard the cards on screen and start again with a fresh card and full timer? Points already scored this turn are kept.',
+    confirmLabel: 'Restart',
+  },
+}
 
 export default function GameScreen() {
   const { state, dispatch } = useGame()
   const [editTarget, setEditTarget] = useState<Team | null>(null)
   const [editScoreText, setEditScoreText] = useState('')
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null)
 
   // Navigate to results as soon as phase flips to finished
   React.useEffect(() => {
@@ -37,11 +65,10 @@ export default function GameScreen() {
     [dispatch],
   )
 
+  // Reveal is blocked until a category is chosen (no-board mode) — the card
+  // overlay itself explains this, so a blocked tap simply does nothing.
   const handleReveal = () => {
-    if (!state.config.boardMode && !state.currentTurn?.selectedCategory) {
-      Alert.alert('Choose a category first', 'Select a category before revealing the card.')
-      return
-    }
+    if (!state.config.boardMode && !state.currentTurn?.selectedCategory) return
     dispatch({ type: 'REVEAL_CARD' })
   }
   const handleSelectCategory = (cat: Category) => dispatch({ type: 'SELECT_CATEGORY', category: cat })
@@ -50,22 +77,21 @@ export default function GameScreen() {
   const handleSkip = () => dispatch({ type: 'SKIP' })
   const handleConfirmTurnEnd = () => dispatch({ type: 'CONFIRM_TURN_END' })
   const handleStartTurn = () => dispatch({ type: 'START_TURN' })
-  const handleUndo = () => {
-    Alert.alert(
-      'Undo Last Turn',
-      'This will reverse the previous turn — scores, cards, and team order will be restored.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Undo', style: 'destructive', onPress: () => dispatch({ type: 'UNDO' }) },
-      ],
-    )
-  }
 
-  const handleEndGame = () => {
-    Alert.alert('End Game', 'Are you sure you want to end the game?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'End', style: 'destructive', onPress: () => dispatch({ type: 'END_GAME' }) },
-    ])
+  // Chakra round (Section 7)
+  const handleTriggerChakra = () => dispatch({ type: 'TRIGGER_CHAKRA' })
+  const handleSelectChakraCard = (card: Card) => dispatch({ type: 'SELECT_CHAKRA_CARD', card })
+  const handleChakraWinner = (winningTeamId: string) =>
+    dispatch({ type: 'CHAKRA_CORRECT', winningTeamId })
+  const handleConfirmChakraEnd = () => dispatch({ type: 'CONFIRM_CHAKRA_END' })
+
+  // Destructive actions confirm through a centred dialog (Alert.alert is a
+  // silent no-op on web, which made these buttons appear broken).
+  const runPendingConfirm = () => {
+    if (pendingConfirm === 'undo') dispatch({ type: 'UNDO' })
+    if (pendingConfirm === 'end') dispatch({ type: 'END_GAME' })
+    if (pendingConfirm === 'restart') dispatch({ type: 'RESTART_TURN' })
+    setPendingConfirm(null)
   }
 
   // ── Manual score editing ──────────────────────────────────────────────
@@ -79,10 +105,8 @@ export default function GameScreen() {
   const submitEditScore = () => {
     if (!editTarget) return
     const n = parseInt(editScoreText, 10)
-    if (isNaN(n) || n < 0) {
-      Alert.alert('Invalid score', 'Enter a number of 0 or more.')
-      return
-    }
+    // Invalid input: keep the modal open until a valid number is entered
+    if (isNaN(n) || n < 0) return
     dispatch({ type: 'SET_TEAM_SCORE', teamId: editTarget.id, score: n })
     setEditTarget(null)
   }
@@ -91,6 +115,24 @@ export default function GameScreen() {
 
   const { teams, activeTeamIndex, currentTurn, config } = state
   const activeTeam = teams[activeTeamIndex]
+  const isBonusTurn = state.resumeTeamIndex !== null
+
+  // ── Phase: Chakra round ───────────────────────────────────────────────
+  if (state.phase === 'chakra' && state.chakraState) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ChakraRound
+          chakraState={state.chakraState}
+          teams={teams}
+          reward={config.chakraReward}
+          onSelectCard={handleSelectChakraCard}
+          onTeamWon={handleChakraWinner}
+          onEndWithoutWinner={handleConfirmChakraEnd}
+          onConfirmEnd={handleConfirmChakraEnd}
+        />
+      </SafeAreaView>
+    )
+  }
 
   // ── Phase: between turns ──────────────────────────────────────────────
   if (!currentTurn) {
@@ -103,26 +145,46 @@ export default function GameScreen() {
             onLongPressTeam={openEditScore}
           />
           <View style={styles.headerActions}>
+            <TouchableOpacity onPress={() => router.push('/completed')} style={styles.headerBtn}>
+              <Text style={styles.headerBtnText}>Words</Text>
+            </TouchableOpacity>
             {state.turnHistory.length > 0 && (
-              <TouchableOpacity onPress={handleUndo} style={styles.headerBtn}>
+              <TouchableOpacity onPress={() => setPendingConfirm('undo')} style={styles.headerBtn}>
                 <Text style={styles.headerBtnText}>Undo</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={handleEndGame} style={styles.headerBtn}>
+            <TouchableOpacity onPress={() => setPendingConfirm('end')} style={styles.headerBtn}>
               <Text style={[styles.headerBtnText, { color: COLOURS.danger }]}>End</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.interstitial}>
-          <Text style={styles.interstitialLabel}>Next up</Text>
+          <Text style={styles.interstitialLabel}>
+            {isBonusTurn ? '☸ Chakra Bonus Round' : 'Next up'}
+          </Text>
           <Text style={styles.interstitialTeam}>{activeTeam.name}</Text>
-          <Text style={styles.interstitialSub}>Pass the phone to your team</Text>
+          <Text style={styles.interstitialSub}>
+            {isBonusTurn
+              ? 'You earned an extra round — make it count!'
+              : 'Pass the phone to your team'}
+          </Text>
         </View>
 
         <TouchableOpacity style={styles.primaryBtn} onPress={handleStartTurn} activeOpacity={0.85}>
           <Text style={styles.primaryBtnText}>Start Turn →</Text>
         </TouchableOpacity>
+
+        {/* Chakra trigger — no-board mode only, not before a bonus turn */}
+        {!config.boardMode && !isBonusTurn && (
+          <TouchableOpacity
+            style={styles.chakraBtn}
+            onPress={handleTriggerChakra}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.chakraBtnText}>☸ Chakra Round</Text>
+          </TouchableOpacity>
+        )}
 
         <ScoreEditModal
           team={editTarget}
@@ -131,12 +193,22 @@ export default function GameScreen() {
           onCancel={() => setEditTarget(null)}
           onConfirm={submitEditScore}
         />
+
+        {pendingConfirm && (
+          <ConfirmDialog
+            visible
+            {...CONFIRM_COPY[pendingConfirm]}
+            onCancel={() => setPendingConfirm(null)}
+            onConfirm={runPendingConfirm}
+          />
+        )}
       </SafeAreaView>
     )
   }
 
   const { phase, activeCards, selectedCategory, timerStartedAt, correctIds, voidedIds } = currentTurn
   const skipsRemaining = config.maxActiveCards - activeCards.length
+  const needsCategory = !config.boardMode && phase === 'waiting' && selectedCategory === null
 
   // ── Phase: active turn ────────────────────────────────────────────────
   return (
@@ -150,27 +222,38 @@ export default function GameScreen() {
         />
       </View>
 
-      {/* Team label */}
-      <Text style={styles.turnTeamLabel}>
-        {activeTeam.name}
-        {correctIds.length > 0 && (
-          <Text style={styles.correctCount}> +{correctIds.length}</Text>
-        )}
-      </Text>
+      {/* Chakra bonus round banner */}
+      {isBonusTurn && (
+        <View style={styles.bonusBanner}>
+          <Text style={styles.bonusBannerText}>☸ CHAKRA BONUS ROUND</Text>
+        </View>
+      )}
+
+      {/* Team label + words / restart */}
+      <View style={styles.turnLabelRow}>
+        <Text style={styles.turnTeamLabel}>
+          {activeTeam.name}
+          {correctIds.length > 0 && (
+            <Text style={styles.correctCount}> +{correctIds.length}</Text>
+          )}
+        </Text>
+        <View style={styles.turnLabelActions}>
+          <TouchableOpacity onPress={() => router.push('/completed')} hitSlop={8}>
+            <Text style={styles.restartBtnText}>Words</Text>
+          </TouchableOpacity>
+          {phase === 'active' && (
+            <TouchableOpacity onPress={() => setPendingConfirm('restart')} hitSlop={8}>
+              <Text style={styles.restartBtnText}>Restart</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Category picker — no-board mode, before card is revealed */}
-        {!config.boardMode && phase === 'waiting' && (
-          <CategoryPicker
-            selectedCategory={selectedCategory}
-            onSelect={handleSelectCategory}
-          />
-        )}
-
         {/* Locked category label for board mode */}
         {config.boardMode && selectedCategory && (
           <View style={[styles.lockedCategory, { backgroundColor: CATEGORY_COLOURS[selectedCategory] }]}>
@@ -186,12 +269,23 @@ export default function GameScreen() {
           correctIds={correctIds}
           voidedIds={voidedIds}
           skipsRemaining={skipsRemaining}
+          needsCategory={needsCategory}
           onReveal={handleReveal}
           onCorrect={handleCorrect}
           onVoid={handleVoid}
           onSkip={handleSkip}
         />
       </ScrollView>
+
+      {/* Category bar — below the card, above the timer (no-board mode).
+          Interactive only before the card is revealed. */}
+      {!config.boardMode && (
+        <CategoryBar
+          selectedCategory={selectedCategory}
+          onSelect={handleSelectCategory}
+          interactive={phase === 'waiting'}
+        />
+      )}
 
       {/* Timer */}
       <View style={styles.timerSection}>
@@ -220,42 +314,16 @@ export default function GameScreen() {
         onCancel={() => setEditTarget(null)}
         onConfirm={submitEditScore}
       />
+
+      {pendingConfirm && (
+        <ConfirmDialog
+          visible
+          {...CONFIRM_COPY[pendingConfirm]}
+          onCancel={() => setPendingConfirm(null)}
+          onConfirm={runPendingConfirm}
+        />
+      )}
     </SafeAreaView>
-  )
-}
-
-// ── Category picker component ──────────────────────────────────────────────
-
-function CategoryPicker({
-  selectedCategory,
-  onSelect,
-}: {
-  selectedCategory: Category | null
-  onSelect: (cat: Category) => void
-}) {
-  return (
-    <View style={catStyles.container}>
-      <Text style={catStyles.label}>Choose a category</Text>
-      <View style={catStyles.grid}>
-        {CATEGORIES.map(cat => {
-          const isSelected = cat === selectedCategory
-          const colour = CATEGORY_COLOURS[cat]
-          return (
-            <TouchableOpacity
-              key={cat}
-              style={[catStyles.chip, isSelected && { backgroundColor: colour, borderColor: colour }]}
-              onPress={() => onSelect(cat)}
-              activeOpacity={0.75}
-            >
-              <View style={[catStyles.dot, { backgroundColor: colour }]} />
-              <Text style={[catStyles.chipText, isSelected && catStyles.chipTextSelected]}>
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          )
-        })}
-      </View>
-    </View>
   )
 }
 
@@ -353,9 +421,48 @@ const styles = StyleSheet.create({
     color: COLOURS.textSecondary,
     textAlign: 'center',
   },
+  turnLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  turnLabelActions: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
   turnTeamLabel: {
     fontSize: FONT_SIZE.xl,
     fontWeight: '800',
+    color: COLOURS.textPrimary,
+  },
+  restartBtnText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '600',
+    color: COLOURS.textSecondary,
+  },
+  bonusBanner: {
+    backgroundColor: COLOURS.textPrimary,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+  },
+  bonusBannerText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '800',
+    color: COLOURS.background,
+    letterSpacing: 1.5,
+  },
+  chakraBtn: {
+    borderWidth: 2,
+    borderColor: COLOURS.textPrimary,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  chakraBtnText: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: '700',
     color: COLOURS.textPrimary,
   },
   correctCount: {
@@ -393,48 +500,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
     color: COLOURS.background,
-  },
-})
-
-const catStyles = StyleSheet.create({
-  container: {
-    gap: SPACING.sm,
-  },
-  label: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '700',
-    color: COLOURS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLOURS.surface,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  chipText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
-    color: COLOURS.textPrimary,
-  },
-  chipTextSelected: {
-    color: '#fff',
   },
 })
 

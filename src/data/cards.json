@@ -9,6 +9,14 @@
       "Nature": "Thenga",
       "Random": "Hartal"
     },
+    "wordsMl": {
+      "People": "മോഹൻലാൽ",
+      "Location": "കൊച്ചി",
+      "Object": "ചെണ്ട",
+      "Movie": "ദൃശ്യം",
+      "Nature": "തേങ്ങ",
+      "Random": "ഹർത്താൽ"
+    },
     "chakraCategory": "Movie"
   },
   {
@@ -20,6 +28,14 @@
       "Movie": "Manichithrathazhu",
       "Nature": "Kariveppu",
       "Random": "Bandh"
+    },
+    "wordsMl": {
+      "People": "മമ്മൂട്ടി",
+      "Location": "തിരുവനന്തപുരം",
+      "Object": "മട്ട",
+      "Movie": "മണിച്ചിത്രത്താഴ്",
+      "Nature": "കറിവേപ്പ്",
+      "Random": "ബന്ദ്"
     },
     "chakraCategory": "People"
   },
@@ -33,6 +49,14 @@
       "Nature": "Teak tree",
       "Random": "Sadhya"
     },
+    "wordsMl": {
+      "People": "പൃഥ്വിരാജ്",
+      "Location": "മൂന്നാർ",
+      "Object": "വീണ",
+      "Movie": "പ്രേമം",
+      "Nature": "തേക്ക്",
+      "Random": "സദ്യ"
+    },
     "chakraCategory": "Nature"
   },
   {
@@ -44,6 +68,14 @@
       "Movie": "Minnaram",
       "Nature": "Elephant",
       "Random": "Thiruvathira"
+    },
+    "wordsMl": {
+      "People": "ദിലീപ്",
+      "Location": "ഗുരുവായൂർ",
+      "Object": "കഥകളി മുഖംമൂടി",
+      "Movie": "മിന്നാരം",
+      "Nature": "ആന",
+      "Random": "തിരുവാതിര"
     },
     "chakraCategory": "Object"
   },
@@ -57,6 +89,14 @@
       "Nature": "Peacock",
       "Random": "Vishu"
     },
+    "wordsMl": {
+      "People": "ഫഹദ് ഫാസിൽ",
+      "Location": "വർക്കല",
+      "Object": "ചെമ്പ്",
+      "Movie": "ബാംഗ്ലൂർ ഡേയ്സ്",
+      "Nature": "മയിൽ",
+      "Random": "വിഷു"
+    },
     "chakraCategory": "Location"
   },
   {
@@ -68,6 +108,14 @@
       "Movie": "Charlie",
       "Nature": "Paddy field",
       "Random": "Onam"
+    },
+    "wordsMl": {
+      "People": "പാർവതി",
+      "Location": "ആലപ്പുഴ",
+      "Object": "കെട്ടുവള്ളം",
+      "Movie": "ചാർലി",
+      "Nature": "നെൽവയൽ",
+      "Random": "ഓണം"
     },
     "chakraCategory": "People"
   },
@@ -81,6 +129,14 @@
       "Nature": "Mango tree",
       "Random": "Boat race"
     },
+    "wordsMl": {
+      "People": "ദുൽഖർ സൽമാൻ",
+      "Location": "തൃശ്ശൂർ",
+      "Object": "കുട",
+      "Movie": "ഒകെ കൺമണി",
+      "Nature": "മാവ്",
+      "Random": "വള്ളംകളി"
+    },
     "chakraCategory": "Movie"
   },
   {
@@ -92,6 +148,14 @@
       "Movie": "Kilukkam",
       "Nature": "Hibiscus",
       "Random": "Kudumbasree"
+    },
+    "wordsMl": {
+      "People": "ജയറാം",
+      "Location": "പാലക്കാട്",
+      "Object": "ഉരുളി",
+      "Movie": "കിലുക്കം",
+      "Nature": "ചെമ്പരത്തി",
+      "Random": "കുടുംബശ്രീ"
     },
     "chakraCategory": "Random"
   },
@@ -105,6 +169,14 @@
       "Nature": "Jackfruit",
       "Random": "Vallam kali"
     },
+    "wordsMl": {
+      "People": "ശോഭന",
+      "Location": "വയനാട്",
+      "Object": "നെറ്റിപ്പട്ടം",
+      "Movie": "തൂവാനത്തുമ്പികൾ",
+      "Nature": "ചക്ക",
+      "Random": "വള്ളംകളി"
+    },
     "chakraCategory": "Nature"
   },
   {
@@ -116,6 +188,14 @@
       "Movie": "Commissioner",
       "Nature": "Tiger",
       "Random": "Pooram"
+    },
+    "wordsMl": {
+      "People": "സുരേഷ് ഗോപി",
+      "Location": "കോഴിക്കോട്",
+      "Object": "അച്ചപ്പം",
+      "Movie": "കമ്മീഷണർ",
+      "Nature": "കടുവ",
+      "Random": "പൂരം"
     },
     "chakraCategory": "Object"
   },
@@ -129,6 +209,14 @@
       "Nature": "Banyan tree",
       "Random": "Attukal pongala"
     },
+    "wordsMl": {
+      "People": "കാവ്യ മാധവൻ",
+      "Location": "എറണാകുളം",
+      "Object": "താഴമ്പൂ",
+      "Movie": "ക്രിസ്ത്യൻ ബ്രദേഴ്സ്",
+      "Nature": "ആൽമരം",
+      "Random": "ആറ്റുകാൽ പൊങ്കാല"
+    },
     "chakraCategory": "People"
   },
   {
@@ -140,6 +228,14 @@
       "Movie": "Ordinary",
       "Nature": "Kingfisher",
       "Random": "Puthuchery"
+    },
+    "wordsMl": {
+      "People": "ബിജു മേനോൻ",
+      "Location": "ഇടുക്കി",
+      "Object": "പാളയം",
+      "Movie": "ഓർഡിനറി",
+      "Nature": "പൊന്മാൻ",
+      "Random": "പുതുച്ചേരി"
     },
     "chakraCategory": "Location"
   },
@@ -153,6 +249,14 @@
       "Nature": "Bamboo",
       "Random": "Pulikali"
     },
+    "wordsMl": {
+      "People": "ഇന്ദ്രജിത്ത്",
+      "Location": "കാസർകോട്",
+      "Object": "തോർത്ത്",
+      "Movie": "തന്മാത്ര",
+      "Nature": "മുള",
+      "Random": "പുലികളി"
+    },
     "chakraCategory": "Movie"
   },
   {
@@ -164,6 +268,14 @@
       "Movie": "How Old Are You",
       "Nature": "Lotus",
       "Random": "Theyyam"
+    },
+    "wordsMl": {
+      "People": "മഞ്ജു വാര്യർ",
+      "Location": "കണ്ണൂർ",
+      "Object": "ഉറിയടി",
+      "Movie": "ഹൗ ഓൾഡ് ആർ യു",
+      "Nature": "താമര",
+      "Random": "തെയ്യം"
     },
     "chakraCategory": "Random"
   },
@@ -177,6 +289,14 @@
       "Nature": "Backwaters",
       "Random": "Kottiyoor"
     },
+    "wordsMl": {
+      "People": "ടൊവിനോ തോമസ്",
+      "Location": "കോട്ടയം",
+      "Object": "പാവാട",
+      "Movie": "ഗോദ",
+      "Nature": "കായൽ",
+      "Random": "കൊട്ടിയൂർ"
+    },
     "chakraCategory": "Nature"
   },
   {
@@ -188,6 +308,14 @@
       "Movie": "1983",
       "Nature": "King cobra",
       "Random": "Vallom"
+    },
+    "wordsMl": {
+      "People": "നിവിൻ പോളി",
+      "Location": "പെരിയാർ",
+      "Object": "കുഴലപ്പം",
+      "Movie": "1983",
+      "Nature": "രാജവെമ്പാല",
+      "Random": "വള്ളം"
     },
     "chakraCategory": "Object"
   },
@@ -201,6 +329,14 @@
       "Nature": "Spotted deer",
       "Random": "Kummatti"
     },
+    "wordsMl": {
+      "People": "വിനീത് ശ്രീനിവാസൻ",
+      "Location": "തേക്കിൻകാട് മൈതാനം",
+      "Object": "ഓട്ടൻതുള്ളൽ വേഷം",
+      "Movie": "തട്ടത്തിൻ മറയത്ത്",
+      "Nature": "പുള്ളിമാൻ",
+      "Random": "കുമ്മാട്ടി"
+    },
     "chakraCategory": "People"
   },
   {
@@ -212,6 +348,14 @@
       "Movie": "In Harihar Nagar",
       "Nature": "Vayal",
       "Random": "Aranmula mirror"
+    },
+    "wordsMl": {
+      "People": "മുകേഷ്",
+      "Location": "പത്മനാഭസ്വാമി ക്ഷേത്രം",
+      "Object": "മുരിക്ക്",
+      "Movie": "ഇൻ ഹരിഹർ നഗർ",
+      "Nature": "വയൽ",
+      "Random": "ആറന്മുള കണ്ണാടി"
     },
     "chakraCategory": "Location"
   },
@@ -225,6 +369,14 @@
       "Nature": "Monitor lizard",
       "Random": "Kolkali"
     },
+    "wordsMl": {
+      "People": "ലാൽ",
+      "Location": "കാപ്പാട് ബീച്ച്",
+      "Object": "കുക്കു",
+      "Movie": "ചട്ടമ്പിനാട്",
+      "Nature": "ഉടുമ്പ്",
+      "Random": "കോൽക്കളി"
+    },
     "chakraCategory": "Movie"
   },
   {
@@ -236,6 +388,14 @@
       "Movie": "In Ghost House Inn",
       "Nature": "Monsoon",
       "Random": "Kathakali"
+    },
+    "wordsMl": {
+      "People": "സിദ്ദിഖ്",
+      "Location": "സൈലന്റ് വാലി",
+      "Object": "അവൽ",
+      "Movie": "ഇൻ ഗോസ്റ്റ് ഹൗസ് ഇൻ",
+      "Nature": "മൺസൂൺ",
+      "Random": "കഥകളി"
     },
     "chakraCategory": "Random"
   }

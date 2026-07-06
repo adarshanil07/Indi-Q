@@ -4,7 +4,14 @@
 // All deck draws happen here — callers never need to manage deck state directly.
 // =============================================================================
 
-import type { GameState, TurnState, TurnSummary, ChakraState, GamePhase } from '../types/game'
+import type {
+  GameState,
+  TurnState,
+  TurnSummary,
+  ChakraState,
+  CompletedWord,
+  GamePhase,
+} from '../types/game'
 import type { GameAction } from './gameActions'
 import {
   drawCard,
@@ -47,6 +54,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         discardPile: [],
         cardUsage: {},
         turnHistory: [],
+        resumeTeamIndex: null,
+        completedWords: [],
       }
     }
 
@@ -113,8 +122,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let { deck, cardUsage } = state
       let discardPile = [...state.discardPile, card]
 
+      let completedWords = state.completedWords
       if (turn.selectedCategory) {
         cardUsage = recordCardUsage(cardUsage, action.cardId, turn.selectedCategory)
+        const entry: CompletedWord = {
+          cardId: card.id,
+          word: card.words[turn.selectedCategory],
+          wordMl: card.wordsMl?.[turn.selectedCategory],
+          category: turn.selectedCategory,
+          teamId: turn.teamId,
+          round: state.turnHistory.length,
+        }
+        completedWords = [...completedWords, entry]
       }
 
       let finalActiveCards = newActiveCards
@@ -141,6 +160,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         deck,
         discardPile,
         cardUsage,
+        completedWords,
         currentTurn: { ...turn, activeCards: finalActiveCards, correctIds: newCorrectIds },
       }
     }
@@ -199,15 +219,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Remaining active cards (incl. voided) all go to discard — no score
       const newDiscard = [...state.discardPile, ...turn.activeCards]
       const teamIndex = state.activeTeamIndex
+      const isBonusTurn = state.resumeTeamIndex !== null
 
       const summary: TurnSummary = {
         teamId: turn.teamId,
         teamIndex,
         scoreGained: turn.correctIds.length,
         cardIds: [...turn.correctIds, ...turn.activeCards.map(c => c.id)],
+        ...(isBonusTurn && { resumeTeamIndex: state.resumeTeamIndex! }),
       }
 
-      const nextIdx = nextTeamIndex(teamIndex, state.teams.length)
+      // After a Chakra bonus turn, play resumes with the stored team;
+      // otherwise rotation advances as normal.
+      const nextIdx = isBonusTurn
+        ? state.resumeTeamIndex!
+        : nextTeamIndex(teamIndex, state.teams.length)
 
       const updatedState: GameState = {
         ...state,
@@ -216,10 +242,42 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activeTeamIndex: nextIdx,
         currentTurn: null,
         chakraState: null,
+        resumeTeamIndex: null,
       }
 
       const newPhase: GamePhase = isGameOver(updatedState) ? 'finished' : 'playing'
       return { ...updatedState, phase: newPhase }
+    }
+
+    case 'RESTART_TURN': {
+      const turn = state.currentTurn
+      if (!turn) return state
+
+      // Cards on screen go to discard; a fresh card is drawn with a full timer.
+      const { deck, discardPile, cardUsage } = withFilledDeck(
+        state.deck,
+        [...state.discardPile, ...turn.activeCards],
+        state.cardUsage,
+      )
+      if (deck.length === 0) return state
+
+      const [freshCard, newDeck] = drawCard(deck)
+
+      return {
+        ...state,
+        deck: newDeck,
+        discardPile,
+        cardUsage,
+        currentTurn: {
+          ...turn,
+          phase: 'waiting',
+          activeCards: [freshCard],
+          skipsUsed: 0,
+          voidedIds: [],
+          selectedCategory: null,
+          timerStartedAt: null,
+        },
+      }
     }
 
     // ── Undo ─────────────────────────────────────────────────────────────
@@ -239,6 +297,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newDiscard = state.discardPile.filter(c => !undoneIds.has(c.id))
       const restored = state.discardPile.filter(c => undoneIds.has(c.id))
 
+      // Strip the undone turn's entries from the completed-words log.
+      // The undone turn's round index is turnHistory.length - 1; Chakra-round
+      // entries sharing that round number belong to a separate Chakra round
+      // and are kept.
+      const undoneRound = state.turnHistory.length - 1
+      const newCompletedWords = state.completedWords.filter(
+        w => !(w.round === undoneRound && !w.isChakra && w.teamId === last.teamId),
+      )
+
       return {
         ...state,
         teams: newTeams,
@@ -248,6 +315,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activeTeamIndex: last.teamIndex,
         turnHistory: state.turnHistory.slice(0, -1),
         phase: 'playing',
+        completedWords: newCompletedWords,
+        // If the undone turn was a Chakra bonus turn, restore its bookkeeping
+        // so re-playing it still resumes rotation with the right team.
+        resumeTeamIndex: last.resumeTeamIndex ?? null,
       }
     }
 
@@ -298,25 +369,69 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'CHAKRA_CORRECT': {
       if (!state.chakraState || state.chakraState.phase !== 'active') return state
-      // TBD (req Q9): award mechanism not finalised — giving 1 point for now
-      const newTeams = state.teams.map(t =>
-        t.id === action.winningTeamId ? { ...t, score: t.score + 1 } : t,
-      )
+
+      // Points reward is applied immediately; 'extra-round' is handled at
+      // CONFIRM_CHAKRA_END by queueing a bonus turn for the winner.
+      const reward = state.config.chakraReward
+      const newTeams =
+        typeof reward === 'number'
+          ? state.teams.map(t =>
+              t.id === action.winningTeamId ? { ...t, score: t.score + reward } : t,
+            )
+          : state.teams
+
+      // Log the guessed Chakra word for the Completed Words screen
+      const sel = state.chakraState.selectedCard
+      const completedWords = sel
+        ? [
+            ...state.completedWords,
+            {
+              cardId: sel.id,
+              word: sel.words[sel.chakraCategory],
+              wordMl: sel.wordsMl?.[sel.chakraCategory],
+              category: sel.chakraCategory,
+              teamId: action.winningTeamId,
+              round: state.turnHistory.length,
+              isChakra: true,
+            },
+          ]
+        : state.completedWords
+
       return {
         ...state,
         teams: newTeams,
+        completedWords,
         chakraState: { ...state.chakraState, phase: 'ended', winningTeamId: action.winningTeamId },
       }
     }
 
     case 'CONFIRM_CHAKRA_END': {
       if (!state.chakraState) return state
-      return {
+
+      const { winningTeamId } = state.chakraState
+      const discardPile = [...state.discardPile, ...state.chakraState.cards]
+
+      // The Chakra round replaced the active team's turn, so rotation advances.
+      const nextIdx = nextTeamIndex(state.activeTeamIndex, state.teams.length)
+
+      // Extra-round reward: the winner plays a bonus turn first, then play
+      // resumes with the team that was up next.
+      const winnerIdx =
+        state.config.chakraReward === 'extra-round' && winningTeamId
+          ? state.teams.findIndex(t => t.id === winningTeamId)
+          : -1
+
+      const updatedState: GameState = {
         ...state,
-        phase: 'playing',
         chakraState: null,
-        discardPile: [...state.discardPile, ...state.chakraState.cards],
+        discardPile,
+        activeTeamIndex: winnerIdx >= 0 ? winnerIdx : nextIdx,
+        resumeTeamIndex: winnerIdx >= 0 ? nextIdx : null,
       }
+
+      // A points reward may have pushed the winner past the target score.
+      const newPhase: GamePhase = isGameOver(updatedState) ? 'finished' : 'playing'
+      return { ...updatedState, phase: newPhase }
     }
 
     default:

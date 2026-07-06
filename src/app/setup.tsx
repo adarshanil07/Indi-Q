@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,9 +13,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useStartGame } from '@/store/GameContext'
+import { loadSavedSetup, saveSetup } from '@/utils/setupStorage'
 import { BORDER_RADIUS, COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
+import type { ChakraReward } from '@/types/game'
 
 const TIMER_OPTIONS = [30, 45, 60, 90, 120]
+const CHAKRA_REWARD_OPTIONS: readonly ChakraReward[] = [1, 2, 3, 'extra-round']
 const DEFAULT_TEAM_COUNT = 2
 const DEFAULT_TIMER = 60
 const DEFAULT_MAX_CARDS = 2
@@ -35,6 +37,23 @@ export default function SetupScreen() {
   const [boardMode, setBoardMode] = useState(false)
   const [targetScoreText, setTargetScoreText] = useState('')
   const [chakraCardCount, setChakraCardCount] = useState(3)
+  const [chakraReward, setChakraReward] = useState<ChakraReward>(1)
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  // Restore the last-used setup (Section 5: options are remembered between games)
+  useEffect(() => {
+    loadSavedSetup().then(saved => {
+      if (!saved) return
+      setTeamCount(saved.teamCount)
+      setTeamNames(saved.teamNames)
+      setTimerDuration(saved.timerDuration)
+      setMaxActiveCards(saved.maxActiveCards)
+      setBoardMode(saved.boardMode)
+      setTargetScoreText(saved.targetScoreText)
+      setChakraCardCount(saved.chakraCardCount)
+      setChakraReward(saved.chakraReward)
+    })
+  }, [])
 
   const handleTeamCountChange = (count: number) => {
     setTeamCount(count)
@@ -48,7 +67,7 @@ export default function SetupScreen() {
   const handleStart = () => {
     const names = teamNames.map(n => n.trim()).filter(Boolean)
     if (names.length < 2) {
-      Alert.alert('Need at least 2 teams', 'Please name at least 2 teams.')
+      setValidationError('Please name at least 2 teams.')
       return
     }
 
@@ -57,15 +76,29 @@ export default function SetupScreen() {
       : undefined
 
     if (targetScoreText.trim() && (!targetScore || targetScore < 1)) {
-      Alert.alert('Invalid target score', 'Enter a number greater than 0, or leave it blank.')
+      setValidationError('Target score must be a number greater than 0, or left blank.')
       return
     }
+
+    setValidationError(null)
+
+    saveSetup({
+      teamCount,
+      teamNames,
+      timerDuration,
+      maxActiveCards,
+      boardMode,
+      targetScoreText,
+      chakraCardCount,
+      chakraReward,
+    })
 
     startGame({
       teamNames: names,
       timerDuration,
       maxActiveCards,
       chakraCardCount,
+      chakraReward,
       boardMode,
       targetScore,
     })
@@ -188,6 +221,24 @@ export default function SetupScreen() {
             <Text style={styles.hint}>Cards shown to the describer during Chakra Mode.</Text>
           </Section>
 
+          {/* Chakra reward */}
+          <Section label="Chakra Reward">
+            <SegmentedPicker
+              options={CHAKRA_REWARD_OPTIONS}
+              value={chakraReward}
+              onSelect={setChakraReward}
+              formatLabel={r => (r === 'extra-round' ? 'Extra Round' : `+${r}`)}
+            />
+            <Text style={styles.hint}>
+              {chakraReward === 'extra-round'
+                ? 'The team that guesses the Chakra word first plays a bonus round.'
+                : `The team that guesses the Chakra word first gains ${chakraReward} point${chakraReward === 1 ? '' : 's'}.`}
+            </Text>
+          </Section>
+
+          {/* Validation error */}
+          {validationError && <Text style={styles.errorText}>{validationError}</Text>}
+
           {/* Start button */}
           <TouchableOpacity
             style={styles.startBtn}
@@ -213,7 +264,7 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   )
 }
 
-function SegmentedPicker<T extends number>({
+function SegmentedPicker<T extends number | string>({
   options,
   value,
   onSelect,
@@ -295,6 +346,12 @@ const styles = StyleSheet.create({
     color: COLOURS.textSecondary,
     marginTop: SPACING.xs,
     lineHeight: 20,
+  },
+  errorText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '600',
+    color: '#FF3B30',
+    textAlign: 'center',
   },
   startBtn: {
     backgroundColor: COLOURS.textPrimary,

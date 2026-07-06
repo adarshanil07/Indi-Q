@@ -25,10 +25,10 @@ export const CATEGORIES: readonly Category[] = [
  * Single source of truth — change a colour here and it updates everywhere.
  */
 export const CATEGORY_COLOURS: Record<Category, string> = {
-  People:   '#F5D000', // Yellow
-  Location: '#7B68B5', // Purple
-  Object:   '#00AADF', // Blue
-  Movie:    '#F58220', // Orange
-  Nature:   '#2E8B57', // Green
-  Random:   '#D0021B', // Red
+  People:   '#FDE803', // Yellow  — Plain card [Vectorized].svg
+  Location: '#8783BC', // Purple  — Plain card [Vectorized].svg
+  Object:   '#62B0E0', // Blue    — Plain card [Vectorized].svg
+  Movie:    '#F28D1D', // Orange  — Plain card [Vectorized].svg
+  Nature:   '#0A9C4E', // Green   — Plain card [Vectorized].svg
+  Random:   '#E41D1F', // Red     — Plain card [Vectorized].svg
 }

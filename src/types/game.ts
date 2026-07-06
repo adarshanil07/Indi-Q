@@ -43,13 +43,52 @@ export type Category = 'People' | 'Location' | 'Object' | 'Movie' | 'Nature' | '
 export interface Card {
   id: string
   words: Record<Category, string>
+
+  /**
+   * Malayalam-script version of each word, shown as small grey text
+   * alongside the transliteration. Optional — older card data may lack it.
+   */
+  wordsMl?: Record<Category, string>
+
   chakraCategory: Category
+}
+
+/**
+ * A word that was successfully guessed at some point in the session.
+ * Powers the Completed Words screen — who scored what, in which category.
+ */
+export interface CompletedWord {
+  cardId: string
+  word: string
+  wordMl?: string
+  category: Category
+  teamId: string
+
+  /**
+   * Which round this word was guessed in — the value of turnHistory.length
+   * at the time. Together with teamId/isChakra this groups words by round
+   * on the Completed Words screen.
+   */
+  round: number
+
+  /** True when the word was guessed in a Chakra round, not a normal turn. */
+  isChakra?: boolean
 }
 
 
 // -----------------------------------------------------------------------------
 // Game Configuration  (Section 5)
 // -----------------------------------------------------------------------------
+
+/**
+ * What the winning team receives after a Chakra round (Section 7).
+ *
+ * 1 | 2 | 3      → the winner's score increases by that many points
+ *                  (the no-board equivalent of moving N places ahead).
+ * 'extra-round'  → the winning team immediately plays a bonus turn
+ *                  before play resumes with the normal team order.
+ */
+export type ChakraReward = 1 | 2 | 3 | 'extra-round'
 
 /**
  * Set once during Game Setup and fixed for the entire session.
@@ -76,6 +115,9 @@ export interface GameConfig {
    * The describer picks one; they describe that card's Chakra word.
    */
   chakraCardCount: number
+
+  /** What the winning team receives after a Chakra round. */
+  chakraReward: ChakraReward
 
   /** Whether the digital board overlay is enabled for this session. */
   boardMode: boolean
@@ -207,6 +249,13 @@ export interface TurnSummary {
    * Returned to the top of the deck on undo so the game state is fully restored.
    */
   cardIds: string[]
+
+  /**
+   * Set when this turn was a Chakra bonus turn (reward = 'extra-round').
+   * Holds the team index play resumed with afterwards, so Undo can restore
+   * GameState.resumeTeamIndex correctly.
+   */
+  resumeTeamIndex?: number
 }
 
 
@@ -320,6 +369,23 @@ export interface GameState {
    * Undo pops the last entry and reverses its effects.
    */
   turnHistory: TurnSummary[]
+
+  /**
+   * Chakra bonus turn (reward = 'extra-round') bookkeeping.
+   *
+   * null    → normal play.
+   * number  → the current turn is a Chakra bonus turn for the winning team.
+   *           When it ends, activeTeamIndex is restored to this value so the
+   *           regular rotation continues where it left off.
+   */
+  resumeTeamIndex: number | null
+
+  /**
+   * Every word guessed correctly this session, in chronological order.
+   * Appended on MARK_CORRECT and CHAKRA_CORRECT; trimmed on UNDO.
+   * Displayed on the Completed Words screen.
+   */
+  completedWords: CompletedWord[]
 
   // boardState?: BoardState
   // ↑ Uncomment when the board overlay is built (Section 8).

@@ -60,6 +60,14 @@ export type GameAction =
   | {
       type: 'CONFIRM_TURN_END'
     }
+  | {
+      /**
+       * False-start recovery (Section 6.9). Discards the cards currently on
+       * screen, draws a fresh card, and resets the turn to 'waiting' with a
+       * full timer. Points already scored this turn are kept.
+       */
+      type: 'RESTART_TURN'
+    }
 
   // ── Undo ───────────────────────────────────────────────────────────────
   | {

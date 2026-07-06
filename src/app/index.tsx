@@ -15,10 +15,18 @@ export default function HomeScreen() {
       <View style={styles.actions}>
         <TouchableOpacity
           style={[styles.btn, styles.btnPrimary]}
+          onPress={() => router.push('/just-cards')}
+          activeOpacity={0.85}
+        >
+          <Text style={[styles.btnText, styles.btnTextPrimary]}>Just Cards</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.btn, styles.btnSecondary]}
           onPress={() => router.push('/setup')}
           activeOpacity={0.85}
         >
-          <Text style={[styles.btnText, styles.btnTextPrimary]}>Start</Text>
+          <Text style={[styles.btnText, styles.btnTextSecondary]}>Full Game</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

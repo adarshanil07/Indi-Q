@@ -13,6 +13,7 @@ const initialState: GameState = {
     timerDuration: 60,
     maxActiveCards: 2,
     chakraCardCount: 3,
+    chakraReward: 1,
     boardMode: false,
   },
   phase: 'setup',
@@ -24,6 +25,8 @@ const initialState: GameState = {
   discardPile: [],
   cardUsage: {},
   turnHistory: [],
+  resumeTeamIndex: null,
+  completedWords: [],
 }
 
 interface GameContextValue {

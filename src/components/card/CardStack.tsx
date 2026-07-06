@@ -10,6 +10,8 @@ interface Props {
   correctIds: string[]
   voidedIds: string[]
   skipsRemaining: number
+  /** True when reveal is blocked because no category has been chosen yet. */
+  needsCategory?: boolean
   onReveal: () => void
   onCorrect: (cardId: string) => void
   onVoid: (cardId: string) => void
@@ -23,12 +25,16 @@ export function CardStack({
   correctIds,
   voidedIds,
   skipsRemaining,
+  needsCategory = false,
   onReveal,
   onCorrect,
   onVoid,
   onSkip,
 }: Props) {
-  const isRevealed = phase === 'active' || phase === 'ended'
+  // Section 6.5: when the timer expires ('ended'), cards blur again —
+  // content is hidden until the player confirms the end of the round.
+  const isRevealed = phase === 'active'
+  const isTimeUp = phase === 'ended'
   const canSkip = phase === 'active' && skipsRemaining > 0
 
   return (
@@ -45,11 +51,14 @@ export function CardStack({
               isRevealed={isRevealed}
               isVoided={isVoided}
               selectedCategory={selectedCategory}
-              onTapToReveal={isTopCard && !isRevealed ? onReveal : undefined}
+              onTapToReveal={isTopCard && phase === 'waiting' ? onReveal : undefined}
+              isTimeUp={isTimeUp}
+              needsCategory={isTopCard && needsCategory}
             />
 
-            {/* Per-card action buttons — only shown when card is revealed */}
-            {isRevealed && !isAlreadyCorrect && (
+            {/* Action buttons: shown during active play, and after time's up
+                for last-second resolution (Correct only) */}
+            {(isRevealed || isTimeUp) && !isAlreadyCorrect && (
               <View style={styles.cardActions}>
                 {isTopCard && canSkip && (
                   <ActionButton
@@ -59,7 +68,7 @@ export function CardStack({
                     onPress={onSkip}
                   />
                 )}
-                {!isVoided && (
+                {!isVoided && isRevealed && (
                   <ActionButton
                     label="Void"
                     colour={COLOURS.surface}
