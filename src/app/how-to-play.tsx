@@ -1,7 +1,22 @@
+// =============================================================================
+// app/how-to-play.tsx — How to Play
+// Rules screen dressed in the INDI-Q brand: the orange backdrop from Home,
+// brand typography, and the physical card's rules back — recreated from the
+// vectorized card assets — sitting front and centre. Each rule below it is a
+// white card bulleted with one of the hand-vectorized category squares, so the
+// whole screen reads as part of the same deck.
+// =============================================================================
+
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
-import { COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
+import { SvgXml } from 'react-native-svg'
+import { Chakra } from '@/components/card/Chakra'
+import { HowToPlayCard } from '@/components/card/HowToPlayCard'
+import { BRAND_COLOURS } from '@/constants/brandAssets'
+import { CATEGORIES } from '@/constants/categories'
+import { CATEGORY_BOX_SVGS } from '@/constants/cardSvg'
+import { BORDER_RADIUS, SPACING } from '@/constants/theme'
 
 const RULES = [
   { heading: 'Objective', body: 'Be the first team to reach the target score, or accumulate the most points when the game ends.' },
@@ -19,15 +34,32 @@ export default function HowToPlayScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-          <Text style={styles.back}>← Back</Text>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} hitSlop={12}>
+          <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>How to Play</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {RULES.map(rule => (
+        {/* The rules back of the physical card, rebuilt from the vectorized assets */}
+        <HowToPlayCard />
+        <Text style={styles.cardCaption}>Straight from the box — the back of every INDI-Q card</Text>
+
+        {RULES.map((rule, i) => (
           <View key={rule.heading} style={styles.rule}>
-            <Text style={styles.ruleHeading}>{rule.heading}</Text>
+            <View style={styles.ruleHeadingRow}>
+              {/* Vectorized category squares double as rule bullets; the
+                  Chakra Round rule gets the vectorized Chakra itself */}
+              {rule.heading === 'Chakra Round' ? (
+                <Chakra size={24} bgColor="#FFFFFF" />
+              ) : (
+                <SvgXml
+                  xml={CATEGORY_BOX_SVGS[CATEGORIES[i % CATEGORIES.length]]}
+                  width={22}
+                  height={22}
+                />
+              )}
+              <Text style={styles.ruleHeading}>{rule.heading}</Text>
+            </View>
             <Text style={styles.ruleBody}>{rule.body}</Text>
           </View>
         ))}
@@ -37,12 +69,69 @@ export default function HowToPlayScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLOURS.background, paddingHorizontal: SPACING.xl },
-  header: { paddingTop: SPACING.lg, marginBottom: SPACING.lg, gap: SPACING.sm },
-  back: { fontSize: FONT_SIZE.md, color: COLOURS.textSecondary },
-  title: { fontSize: FONT_SIZE.xl, fontWeight: '800', color: COLOURS.textPrimary },
-  scroll: { gap: SPACING.lg, paddingBottom: SPACING.xxl },
-  rule: { gap: SPACING.xs },
-  ruleHeading: { fontSize: FONT_SIZE.md, fontWeight: '700', color: COLOURS.textPrimary },
-  ruleBody: { fontSize: FONT_SIZE.md, color: COLOURS.textSecondary, lineHeight: 24 },
+  container: {
+    flex: 1,
+    backgroundColor: BRAND_COLOURS.orange,
+    paddingHorizontal: SPACING.lg,
+  },
+  header: {
+    paddingTop: SPACING.md,
+    marginBottom: SPACING.md,
+    gap: SPACING.sm,
+    alignItems: 'flex-start',
+  },
+  backBtn: {
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderRadius: BORDER_RADIUS.full,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+  },
+  backText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+  title: {
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 34,
+    color: '#FFFFFF',
+  },
+  scroll: {
+    gap: SPACING.md,
+    paddingBottom: SPACING.xxl,
+  },
+  cardCaption: {
+    fontFamily: 'Quicksand_500Medium',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.85)',
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  rule: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    gap: SPACING.xs,
+    shadowColor: '#7a4a00',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  ruleHeadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  ruleHeading: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 17,
+    color: BRAND_COLOURS.ink,
+  },
+  ruleBody: {
+    fontFamily: 'Quicksand_500Medium',
+    fontSize: 15,
+    color: '#444444',
+    lineHeight: 22,
+  },
 })
