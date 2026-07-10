@@ -27,6 +27,8 @@ const initialState: GameState = {
   turnHistory: [],
   resumeTeamIndex: null,
   completedWords: [],
+  finalRound: null,
+  boardPositions: [],
 }
 
 interface GameContextValue {

@@ -1,23 +1,49 @@
+// =============================================================================
+// app/setup.tsx — Game Setup
+// Styled as "filling out a big Indi-Q card": six sections, each headed by a
+// coloured card-row band in the deck's colour order (yellow, purple, blue,
+// orange, green, red), options picked via card-style tiles, on the same warm
+// cream table as Just Cards.
+//
+//   1. Teams        (yellow) — count + coloured name fields
+//   2. Timer        (purple)
+//   3. Skips        (blue)
+//   4. Game Board   (orange)
+//   5. Chakra       (green) — card count + reward, ☸ accent
+//   6. Target Score (red)   — no-board mode only
+// =============================================================================
+
 import React, { useEffect, useState } from 'react'
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import Slider from '@react-native-community/slider'
 import { router } from 'expo-router'
 import { useStartGame } from '@/store/GameContext'
+import { Chakra } from '@/components/card/Chakra'
+import { CATEGORY_COLOURS } from '@/constants/categories'
+import { BRAND_COLOURS } from '@/constants/brandAssets'
+import { UNLIMITED_SKIPS, isUnlimitedSkips } from '@/constants/gameRules'
+import { TEAM_COLOURS } from '@/constants/teams'
 import { loadSavedSetup, saveSetup } from '@/utils/setupStorage'
-import { BORDER_RADIUS, COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
 import type { ChakraReward } from '@/types/game'
 
-const TIMER_OPTIONS = [30, 45, 60, 90, 120]
+const CREAM = '#FFF6E3'
+const INK = BRAND_COLOURS.ink
+const HINT = '#6B5B3E'
+
+const TIMER_MIN = 15
+const TIMER_MAX = 180
+const TIMER_STEP = 5
 const CHAKRA_REWARD_OPTIONS: readonly ChakraReward[] = [1, 2, 3, 'extra-round']
 const DEFAULT_TEAM_COUNT = 2
 const DEFAULT_TIMER = 60
@@ -120,287 +146,404 @@ export default function SetupScreen() {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-              <Text style={styles.backBtn}>← Back</Text>
+              <Text style={styles.backText}>← Back</Text>
             </TouchableOpacity>
             <Text style={styles.title}>Game Setup</Text>
           </View>
 
-          {/* Teams */}
-          <Section label="Number of Teams">
-            <SegmentedPicker
+          {/* 1 · Teams (yellow) */}
+          <SectionCard colour={CATEGORY_COLOURS.People} title="Teams">
+            <TilePicker
               options={[2, 3, 4]}
               value={teamCount}
               onSelect={handleTeamCountChange}
+              colour={CATEGORY_COLOURS.People}
               formatLabel={n => `${n}`}
             />
-          </Section>
+            <View style={styles.teamList}>
+              {teamNames.slice(0, teamCount).map((name, idx) => (
+                <View key={idx} style={styles.teamRow}>
+                  <View style={[styles.teamChip, { backgroundColor: TEAM_COLOURS[idx] }]} />
+                  <TextInput
+                    style={styles.teamInput}
+                    value={name}
+                    onChangeText={text =>
+                      setTeamNames(prev => prev.map((n, i) => (i === idx ? text : n)))
+                    }
+                    placeholder={`Team ${idx + 1}`}
+                    placeholderTextColor={HINT}
+                    maxLength={20}
+                  />
+                </View>
+              ))}
+            </View>
+          </SectionCard>
 
-          <Section label="Team Names">
-            {teamNames.slice(0, teamCount).map((name, idx) => (
-              <TextInput
-                key={idx}
-                style={styles.textInput}
-                value={name}
-                onChangeText={text =>
-                  setTeamNames(prev => prev.map((n, i) => (i === idx ? text : n)))
-                }
-                placeholder={`Team ${idx + 1}`}
-                placeholderTextColor={COLOURS.textSecondary}
-                maxLength={20}
-              />
-            ))}
-          </Section>
-
-          {/* Timer */}
-          <Section label="Timer Duration">
-            <SegmentedPicker
-              options={TIMER_OPTIONS}
+          {/* 2 · Timer (purple) */}
+          <SectionCard colour={CATEGORY_COLOURS.Location} title="Timer">
+            <Text style={styles.timerValue}>{timerDuration}s</Text>
+            <Slider
+              minimumValue={TIMER_MIN}
+              maximumValue={TIMER_MAX}
+              step={TIMER_STEP}
               value={timerDuration}
-              onSelect={setTimerDuration}
-              formatLabel={n => `${n}s`}
+              onValueChange={setTimerDuration}
+              minimumTrackTintColor={CATEGORY_COLOURS.Location}
+              maximumTrackTintColor="rgba(0,0,0,0.15)"
+              thumbTintColor={CATEGORY_COLOURS.Location}
             />
-          </Section>
+            <View style={styles.sliderCaptions}>
+              <Text style={styles.hint}>{TIMER_MIN}s</Text>
+              <Text style={styles.hint}>How long each turn lasts</Text>
+              <Text style={styles.hint}>{TIMER_MAX}s</Text>
+            </View>
+          </SectionCard>
 
-          {/* Skips */}
-          <Section label="Skips per Turn">
-            <SegmentedPicker
-              options={[1, 2, 3]}
+          {/* 3 · Skips (blue) */}
+          <SectionCard colour={CATEGORY_COLOURS.Object} title="Skips">
+            <TilePicker
+              options={[1, 2, 3, UNLIMITED_SKIPS]}
               value={maxActiveCards}
               onSelect={setMaxActiveCards}
-              formatLabel={n => `${n}`}
+              colour={CATEGORY_COLOURS.Object}
+              formatLabel={n => (isUnlimitedSkips(n) ? '∞' : `${n}`)}
             />
             <Text style={styles.hint}>
-              Maximum cards visible on screen at once. Using a skip draws a new card alongside
-              the current one.
+              {isUnlimitedSkips(maxActiveCards)
+                ? 'Unlimited — skip as often as you like; every skipped card stays on screen.'
+                : 'Maximum cards on screen at once — skipping draws a new card alongside the current one.'}
             </Text>
-          </Section>
+          </SectionCard>
 
-          {/* Board mode */}
-          <Section label="Board Mode">
-            <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>
-                {boardMode ? 'Digital board enabled' : 'Card-only mode'}
-              </Text>
-              <Switch
-                value={boardMode}
-                onValueChange={setBoardMode}
-                trackColor={{ true: COLOURS.textPrimary }}
-              />
-            </View>
+          {/* 4 · Game Board (orange) */}
+          <SectionCard colour={CATEGORY_COLOURS.Movie} title="Game Board">
+            <TilePicker
+              options={['cards', 'board'] as const}
+              value={boardMode ? 'board' : 'cards'}
+              onSelect={v => setBoardMode(v === 'board')}
+              colour={CATEGORY_COLOURS.Movie}
+              formatLabel={v => (v === 'cards' ? 'Cards Only' : 'Digital Board')}
+            />
             <Text style={styles.hint}>
               {boardMode
                 ? 'Category is determined by your board position.'
                 : 'Your team picks the category each turn.'}
             </Text>
-          </Section>
+          </SectionCard>
 
-          {/* Target score — only in no-board mode */}
-          {!boardMode && (
-            <Section label="Target Score (optional)">
-              <TextInput
-                style={styles.textInput}
-                value={targetScoreText}
-                onChangeText={setTargetScoreText}
-                placeholder="Leave blank for open-ended play"
-                placeholderTextColor={COLOURS.textSecondary}
-                keyboardType="number-pad"
-                maxLength={4}
-              />
-              <Text style={styles.hint}>First team to reach this score wins.</Text>
-            </Section>
-          )}
-
-          {/* Chakra cards */}
-          <Section label="Chakra Cards">
-            <SegmentedPicker
+          {/* 5 · Chakra (green) */}
+          <SectionCard
+            colour={CATEGORY_COLOURS.Nature}
+            title="Chakra Round"
+            accessory={<Chakra bgColor={CATEGORY_COLOURS.Nature} size={22} />}
+          >
+            <Text style={styles.subLabel}>Cards shown to the describer</Text>
+            <TilePicker
               options={[2, 3, 4, 5]}
               value={chakraCardCount}
               onSelect={setChakraCardCount}
+              colour={CATEGORY_COLOURS.Nature}
               formatLabel={n => `${n}`}
             />
-            <Text style={styles.hint}>Cards shown to the describer during Chakra Mode.</Text>
-          </Section>
-
-          {/* Chakra reward */}
-          <Section label="Chakra Reward">
-            <SegmentedPicker
+            <Text style={styles.subLabel}>Reward for the winning team</Text>
+            <TilePicker
               options={CHAKRA_REWARD_OPTIONS}
               value={chakraReward}
               onSelect={setChakraReward}
+              colour={CATEGORY_COLOURS.Nature}
               formatLabel={r => (r === 'extra-round' ? 'Extra Round' : `+${r}`)}
             />
             <Text style={styles.hint}>
               {chakraReward === 'extra-round'
                 ? 'The team that guesses the Chakra word first plays a bonus round.'
-                : `The team that guesses the Chakra word first gains ${chakraReward} point${chakraReward === 1 ? '' : 's'}.`}
+                : `The team that guesses the Chakra word first gains ${chakraReward} point${
+                    chakraReward === 1 ? '' : 's'
+                  }.`}
             </Text>
-          </Section>
+          </SectionCard>
+
+          {/* 6 · Target Score (red) — no-board mode only */}
+          {!boardMode && (
+            <SectionCard colour={CATEGORY_COLOURS.Random} title="Target Score">
+              <TextInput
+                style={styles.scoreInput}
+                value={targetScoreText}
+                onChangeText={setTargetScoreText}
+                placeholder="Leave blank for open-ended play"
+                placeholderTextColor={HINT}
+                keyboardType="number-pad"
+                maxLength={4}
+              />
+              <Text style={styles.hint}>First team to reach this score wins.</Text>
+            </SectionCard>
+          )}
 
           {/* Validation error */}
           {validationError && <Text style={styles.errorText}>{validationError}</Text>}
 
           {/* Start button */}
-          <TouchableOpacity
-            style={styles.startBtn}
+          <Pressable
             onPress={handleStart}
-            activeOpacity={0.85}
+            style={({ pressed }) => [styles.startBtn, pressed && styles.startBtnPressed]}
           >
             <Text style={styles.startBtnText}>Start Game</Text>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
 
-// ── Small reusable sub-components ──────────────────────────────────────────
+// ── Section framed like a card row ─────────────────────────────────────────
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function SectionCard({
+  colour,
+  title,
+  accessory,
+  children,
+}: {
+  colour: string
+  title: string
+  accessory?: React.ReactNode
+  children: React.ReactNode
+}) {
   return (
-    <View style={sectionStyles.container}>
-      <Text style={sectionStyles.label}>{label}</Text>
-      {children}
+    <View style={sectionStyles.card}>
+      <View style={[sectionStyles.band, { backgroundColor: colour }]}>
+        <Text style={sectionStyles.bandText}>{title}</Text>
+        {accessory && <View style={sectionStyles.accessory}>{accessory}</View>}
+      </View>
+      <View style={sectionStyles.body}>{children}</View>
     </View>
   )
 }
 
-function SegmentedPicker<T extends number | string>({
+// ── Card-tile option picker ─────────────────────────────────────────────────
+// White tiles with the card's black border; the selected tile fills with the
+// section's colour (black text throughout, like the card's own rows).
+
+function TilePicker<T extends number | string>({
   options,
   value,
   onSelect,
+  colour,
   formatLabel,
 }: {
   options: readonly T[]
   value: T
   onSelect: (v: T) => void
+  colour: string
   formatLabel: (v: T) => string
 }) {
   return (
-    <View style={pickerStyles.row}>
-      {options.map(opt => (
-        <TouchableOpacity
-          key={opt}
-          style={[pickerStyles.option, opt === value && pickerStyles.optionActive]}
-          onPress={() => onSelect(opt)}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[pickerStyles.optionText, opt === value && pickerStyles.optionTextActive]}
+    <View style={tileStyles.row}>
+      {options.map(opt => {
+        const selected = opt === value
+        return (
+          <Pressable
+            key={String(opt)}
+            onPress={() => onSelect(opt)}
+            style={({ pressed }) => [
+              tileStyles.tile,
+              selected && { backgroundColor: colour },
+              pressed && tileStyles.tilePressed,
+            ]}
           >
-            {formatLabel(opt)}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text style={tileStyles.tileText} numberOfLines={1} adjustsFontSizeToFit>
+              {formatLabel(opt)}
+            </Text>
+          </Pressable>
+        )
+      })}
     </View>
   )
 }
 
+// ── Styles ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOURS.background,
+    backgroundColor: CREAM,
   },
   scroll: {
-    paddingHorizontal: SPACING.xl,
-    paddingBottom: SPACING.xxl,
-    gap: SPACING.lg,
+    paddingHorizontal: 20,
+    paddingBottom: 48,
+    gap: 18,
   },
   header: {
-    paddingTop: SPACING.lg,
-    marginBottom: SPACING.sm,
+    paddingTop: 16,
+    gap: 6,
   },
-  backBtn: {
-    fontSize: FONT_SIZE.md,
-    color: COLOURS.textSecondary,
-    marginBottom: SPACING.sm,
+  backText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 16,
+    color: HINT,
   },
   title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: '800',
-    color: COLOURS.textPrimary,
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 30,
+    color: INK,
+    lineHeight: 40,
   },
-  textInput: {
-    backgroundColor: COLOURS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    fontSize: FONT_SIZE.md,
-    color: COLOURS.textPrimary,
-    marginBottom: SPACING.sm,
+
+  teamList: {
+    gap: 10,
+    marginTop: 4,
   },
-  toggleRow: {
+  teamRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  teamChip: {
+    width: 30,
+    height: 30,
+    borderRadius: 7,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+  },
+  teamInput: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000000',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 16,
+    color: INK,
+  },
+
+  scoreInput: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000000',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 16,
+    color: INK,
+  },
+
+  timerValue: {
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 30,
+    color: INK,
+    textAlign: 'center',
+    lineHeight: 38,
+  },
+  sliderCaptions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLOURS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
   },
-  toggleLabel: {
-    fontSize: FONT_SIZE.md,
-    color: COLOURS.textPrimary,
+  subLabel: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 13,
+    color: HINT,
+    marginTop: 2,
   },
   hint: {
-    fontSize: FONT_SIZE.sm,
-    color: COLOURS.textSecondary,
-    marginTop: SPACING.xs,
-    lineHeight: 20,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 12.5,
+    color: HINT,
+    opacity: 0.85,
+    lineHeight: 18,
   },
+
   errorText: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
-    color: '#FF3B30',
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 14,
+    color: '#E41D1F',
     textAlign: 'center',
   },
+
   startBtn: {
-    backgroundColor: COLOURS.textPrimary,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingVertical: SPACING.lg,
+    backgroundColor: BRAND_COLOURS.orange,
+    borderRadius: 999,
+    borderWidth: 3,
+    borderColor: '#000000',
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: SPACING.md,
+    marginTop: 4,
+    shadowColor: '#7a4a00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  startBtnPressed: {
+    transform: [{ scale: 0.97 }, { translateY: 2 }],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    elevation: 2,
   },
   startBtnText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
-    color: COLOURS.background,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 19,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 })
 
 const sectionStyles = StyleSheet.create({
-  container: {
-    gap: SPACING.sm,
+  card: {
+    gap: 12,
   },
-  label: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '700',
-    color: COLOURS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  band: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 10,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  bandText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 17,
+    color: '#000000',
+  },
+  accessory: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  body: {
+    gap: 10,
+    paddingHorizontal: 2,
   },
 })
 
-const pickerStyles = StyleSheet.create({
+const tileStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: 8,
   },
-  option: {
+  tile: {
     flex: 1,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    backgroundColor: COLOURS.surface,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000000',
+    paddingVertical: 11,
+    paddingHorizontal: 4,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  optionActive: {
-    backgroundColor: COLOURS.textPrimary,
+  tilePressed: {
+    transform: [{ scale: 0.95 }],
   },
-  optionText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '600',
-    color: COLOURS.textSecondary,
-  },
-  optionTextActive: {
-    color: COLOURS.background,
+  tileText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 15,
+    color: '#000000',
   },
 })

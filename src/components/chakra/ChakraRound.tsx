@@ -1,27 +1,50 @@
 // =============================================================================
 // components/chakra/ChakraRound.tsx
-// Full-screen UI for a Chakra round (Section 7).
+// Full-screen UI for a Chakra round (Section 7), in the Indi-Q card theme:
+// green (Nature) card-row bands on the cream table, with each team's answer
+// button in that team's identity colour.
 //
 // Flow (mirrors ChakraPhase):
 //   'selecting' — describer sees config.chakraCardCount cards and picks one.
 //   'active'    — the chosen card is shown; the describer explains its Chakra
-//                 word while EVERY team guesses. The describer then taps the
-//                 team that guessed first.
+//                 word while EVERY team guesses, then taps the team that
+//                 guessed first.
 //   'ended'     — winner + reward announcement; confirm to resume play.
 // =============================================================================
 
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useEffect, useRef } from 'react'
+import {
+  Animated,
+  Easing,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import type { Card, ChakraReward, ChakraState, Team } from '@/types/game'
 import { GameCard } from '@/components/card/GameCard'
 import { Chakra } from '@/components/card/Chakra'
-import { BORDER_RADIUS, COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
+import { CATEGORY_COLOURS } from '@/constants/categories'
+import { BRAND_COLOURS } from '@/constants/brandAssets'
+import { teamColourAt } from '@/constants/teams'
+
+const GREEN = CATEGORY_COLOURS.Nature
+const INK = BRAND_COLOURS.ink
+const HINT = BRAND_COLOURS.hint
 
 interface Props {
   chakraState: ChakraState
   teams: Team[]
   reward: ChakraReward
+  primaryLanguage?: 'en' | 'ml'
+  /** False when the round is mandatory (board ☸ landings) — hides Cancel. */
+  allowCancel?: boolean
   onSelectCard: (card: Card) => void
   onTeamWon: (teamId: string) => void
+  /** Back out during card selection — accidental trigger, costs nothing. */
+  onCancel: () => void
   onEndWithoutWinner: () => void
   onConfirmEnd: () => void
 }
@@ -30,22 +53,24 @@ export function ChakraRound({
   chakraState,
   teams,
   reward,
+  primaryLanguage = 'en',
+  allowCancel = true,
   onSelectCard,
   onTeamWon,
+  onCancel,
   onEndWithoutWinner,
   onConfirmEnd,
 }: Props) {
   const { phase, cards, selectedCard, winningTeamId } = chakraState
-  const winner = teams.find(t => t.id === winningTeamId)
+  const winnerIdx = teams.findIndex(t => t.id === winningTeamId)
+  const winner = winnerIdx >= 0 ? teams[winnerIdx] : undefined
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.chakraBadge}>
-          <Chakra bgColor={COLOURS.background} size={28} />
-        </View>
-        <Text style={styles.title}>Chakra Round</Text>
+      {/* Header band — green card row with the chakra mark */}
+      <View style={styles.headerBand}>
+        <Chakra bgColor={GREEN} size={26} />
+        <Text style={styles.headerText}>Chakra Round</Text>
       </View>
 
       {/* ── Phase: selecting ── */}
@@ -58,20 +83,30 @@ export function ChakraRound({
             contentContainerStyle={styles.cardList}
             showsVerticalScrollIndicator={false}
           >
-            {cards.map(card => (
-              <TouchableOpacity
-                key={card.id}
-                onPress={() => onSelectCard(card)}
-                activeOpacity={0.8}
-              >
-                <GameCard
-                  card={card}
-                  isRevealed
-                  isVoided={false}
-                  selectedCategory={card.chakraCategory}
-                />
-              </TouchableOpacity>
+            {cards.map((card, idx) => (
+              <CascadeIn key={card.id} index={idx}>
+                <TouchableOpacity onPress={() => onSelectCard(card)} activeOpacity={0.8}>
+                  <GameCard
+                    card={card}
+                    isRevealed
+                    isVoided={false}
+                    selectedCategory={card.chakraCategory}
+                    primaryLanguage={primaryLanguage}
+                  />
+                </TouchableOpacity>
+              </CascadeIn>
             ))}
+
+            {/* Escape hatch: accidental trigger costs nothing.
+                Hidden when the round is mandatory (board ☸ landing). */}
+            {allowCancel && (
+              <Pressable
+                onPress={onCancel}
+                style={({ pressed }) => [styles.cancelBtn, pressed && styles.pressed]}
+              >
+                <Text style={styles.cancelBtnText}>← Cancel — back to normal turn</Text>
+              </Pressable>
+            )}
           </ScrollView>
         </>
       )}
@@ -87,143 +122,271 @@ export function ChakraRound({
             isRevealed
             isVoided={false}
             selectedCategory={selectedCard.chakraCategory}
+            primaryLanguage={primaryLanguage}
           />
 
           <Text style={styles.whoGuessed}>Which team guessed it first?</Text>
           <View style={styles.teamButtons}>
-            {teams.map(team => (
-              <TouchableOpacity
+            {teams.map((team, idx) => (
+              <Pressable
                 key={team.id}
-                style={styles.teamBtn}
+                style={({ pressed }) => [
+                  styles.teamBtn,
+                  { backgroundColor: teamColourAt(idx) },
+                  pressed && styles.pressed,
+                ]}
                 onPress={() => onTeamWon(team.id)}
-                activeOpacity={0.8}
               >
-                <Text style={styles.teamBtnText}>{team.name}</Text>
-              </TouchableOpacity>
+                <Text style={styles.teamBtnText} numberOfLines={1}>
+                  {team.name}
+                </Text>
+              </Pressable>
             ))}
           </View>
 
-          <TouchableOpacity onPress={onEndWithoutWinner} hitSlop={8}>
-            <Text style={styles.noWinner}>Nobody guessed it — end the round</Text>
-          </TouchableOpacity>
+          <Pressable
+            onPress={onEndWithoutWinner}
+            style={({ pressed }) => [styles.noWinnerBtn, pressed && styles.pressed]}
+          >
+            <Text style={styles.noWinnerText}>Nobody guessed it — end the round</Text>
+          </Pressable>
         </>
       )}
 
       {/* ── Phase: ended ── */}
       {phase === 'ended' && winner && (
-        <View style={styles.resultBlock}>
+        <WinnerSpring style={styles.resultBlock}>
           <Text style={styles.resultLabel}>Chakra round won by</Text>
-          <Text style={styles.resultTeam}>{winner.name}</Text>
+          <View style={[styles.winnerBand, { backgroundColor: teamColourAt(winnerIdx) }]}>
+            <Text style={styles.winnerBandText} numberOfLines={1} adjustsFontSizeToFit>
+              {winner.name}
+            </Text>
+          </View>
           <Text style={styles.resultReward}>
             {reward === 'extra-round'
               ? `${winner.name} plays a bonus round next!`
               : `+${reward} point${reward === 1 ? '' : 's'}`}
           </Text>
 
-          <TouchableOpacity style={styles.confirmBtn} onPress={onConfirmEnd} activeOpacity={0.85}>
+          <Pressable
+            style={({ pressed }) => [styles.confirmBtn, pressed && styles.pressed]}
+            onPress={onConfirmEnd}
+          >
             <Text style={styles.confirmBtnText}>Continue →</Text>
-          </TouchableOpacity>
-        </View>
+          </Pressable>
+        </WinnerSpring>
       )}
     </View>
+  )
+}
+
+// ── Entrance animations ─────────────────────────────────────────────────────
+
+// Cards deal in one after another (80ms stagger)
+function CascadeIn({ index, children }: { index: number; children: React.ReactNode }) {
+  const anim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 280,
+      delay: index * 80,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start()
+  }, [anim, index])
+
+  return (
+    <Animated.View
+      style={{
+        opacity: anim,
+        transform: [
+          { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [22, 0] }) },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  )
+}
+
+// Winner announcement springs in (same feel as the results screen)
+function WinnerSpring({
+  style,
+  children,
+}: {
+  style?: object
+  children: React.ReactNode
+}) {
+  const anim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    Animated.spring(anim, {
+      toValue: 1,
+      friction: 5,
+      tension: 90,
+      useNativeDriver: true,
+    }).start()
+  }, [anim])
+
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: anim,
+          transform: [
+            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.82, 1] }) },
+          ],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: SPACING.md,
+    gap: 14,
+    paddingBottom: 12,
   },
-  header: {
+  headerBand: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
-    paddingTop: SPACING.sm,
+    gap: 10,
+    backgroundColor: GREEN,
+    borderRadius: 10,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 8,
   },
-  chakraBadge: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: '800',
-    color: COLOURS.textPrimary,
+  headerText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 18,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   subtitle: {
-    fontSize: FONT_SIZE.md,
-    color: COLOURS.textSecondary,
-    lineHeight: 22,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 14,
+    color: HINT,
+    lineHeight: 21,
   },
   cardList: {
-    gap: SPACING.md,
-    paddingBottom: SPACING.xl,
+    gap: 14,
+    paddingBottom: 24,
   },
   whoGuessed: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '700',
-    color: COLOURS.textPrimary,
-    marginTop: SPACING.sm,
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 18,
+    color: INK,
+    marginTop: 4,
+    lineHeight: 25,
   },
   teamButtons: {
-    gap: SPACING.sm,
+    gap: 10,
   },
   teamBtn: {
-    backgroundColor: COLOURS.textPrimary,
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.md,
+    borderRadius: 999,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+    paddingVertical: 13,
     alignItems: 'center',
   },
   teamBtnText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '700',
-    color: COLOURS.background,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 16,
+    color: '#000000',
   },
-  noWinner: {
-    fontSize: FONT_SIZE.sm,
-    color: COLOURS.danger,
-    textAlign: 'center',
-    paddingVertical: SPACING.sm,
+  cancelBtn: {
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: '#000000',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 11,
+    alignItems: 'center',
+    marginTop: 2,
   },
+  cancelBtnText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 14,
+    color: INK,
+  },
+  noWinnerBtn: {
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: CATEGORY_COLOURS.Random,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  noWinnerText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 13,
+    color: CATEGORY_COLOURS.Random,
+  },
+  pressed: {
+    transform: [{ scale: 0.97 }, { translateY: 1 }],
+  },
+
   resultBlock: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.sm,
-    paddingBottom: SPACING.xxl,
+    gap: 16,
+    paddingBottom: 48,
   },
   resultLabel: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '700',
-    color: COLOURS.textSecondary,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 14,
+    color: HINT,
     textTransform: 'uppercase',
-    letterSpacing: 1.5,
-  },
-  resultTeam: {
-    fontSize: 44,
-    fontWeight: '900',
-    color: COLOURS.textPrimary,
+    letterSpacing: 2,
     textAlign: 'center',
   },
-  resultReward: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
-    color: COLOURS.correct,
-    marginTop: SPACING.xs,
-  },
-  confirmBtn: {
-    backgroundColor: COLOURS.textPrimary,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xxl,
-    marginTop: SPACING.xl,
-    alignSelf: 'stretch',
+  winnerBand: {
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: '#000000',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
+  winnerBandText: {
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 36,
+    color: '#000000',
+    lineHeight: 48,
+  },
+  resultReward: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 17,
+    color: GREEN,
+    textAlign: 'center',
+  },
+  confirmBtn: {
+    backgroundColor: BRAND_COLOURS.orange,
+    borderRadius: 999,
+    borderWidth: 3,
+    borderColor: '#000000',
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 12,
+    shadowColor: '#7a4a00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
   confirmBtnText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
-    color: COLOURS.background,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 19,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 })

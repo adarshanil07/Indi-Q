@@ -1,14 +1,37 @@
-import { useState } from 'react'
+// =============================================================================
+// app/just-cards.tsx — Just Cards mode
+// The digital replacement for the physical deck: one card at a time, prev /
+// next navigation, nothing else. Players run scoring and rules themselves.
+//
+//   • Language toggle (EN | മ) swaps which language is the card's main text;
+//     the choice is persisted across sessions.
+//   • Nav buttons are "card tiles" — the card's own visual language (flat
+//     colour, chunky black border, rounded corners).
+//   • Cards are dealt: next slides in from the right with a slight rotation
+//     that settles flat; prev mirrors the motion. Buttons are locked during
+//     the ~300ms animation so double-taps can't desync the deck.
+// =============================================================================
+
+import { useEffect, useRef, useState } from 'react'
 import {
+  Animated,
+  Easing,
+  PanResponder,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
   type LayoutChangeEvent,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { GameCard } from '@/components/card/GameCard'
+import { LanguageToggle } from '@/components/ui/LanguageToggle'
+import { BRAND_COLOURS } from '@/constants/brandAssets'
+import { CATEGORY_COLOURS } from '@/constants/categories'
+import { loadCardLanguage, saveCardLanguage, type CardLanguage } from '@/utils/prefs'
 import type { Card } from '@/types/game'
 import rawCards from '../data/cards.json'
 
@@ -16,6 +39,14 @@ const ALL_CARDS = rawCards as Card[]
 
 // Must match aspectRatio in GameCard — physical card is 703×502 (landscape)
 const CARD_ASPECT = 703 / 502
+
+const CREAM = '#FFF6E3'
+// Nav buttons are miniature playing cards at the same aspect ratio as the
+// real card, so they never feel like a foreign UI element next to it.
+const MINI_CARD_W = 100
+const MINI_CARD_H = MINI_CARD_W / CARD_ASPECT
+const SLIDE_OUT_MS = 140
+const SLIDE_IN_MS = 210
 
 function shuffled<T>(arr: T[]): T[] {
   const copy = [...arr]
@@ -27,97 +58,202 @@ function shuffled<T>(arr: T[]): T[] {
 }
 
 export default function JustCardsScreen() {
+  const { width: screenW } = useWindowDimensions()
   const [deck, setDeck] = useState<Card[]>(() => shuffled(ALL_CARDS))
   const [index, setIndex] = useState(0)
-  // Measured size of the flexible card area after layout
+  const [language, setLanguage] = useState<CardLanguage>('en')
   const [areaSize, setAreaSize] = useState({ w: 0, h: 0 })
+
+  // Restore the persisted language choice
+  useEffect(() => {
+    loadCardLanguage().then(l => l && setLanguage(l))
+  }, [])
+
+  const setLang = (l: CardLanguage) => {
+    setLanguage(l)
+    saveCardLanguage(l)
+  }
 
   const card = deck[index]
   const isFirst = index === 0
   const isLast = index === deck.length - 1
 
-  // Fit card within the card area while keeping the aspect ratio intact.
-  // If the area is taller than wide, constrain by width; if wider than tall,
-  // constrain by height so the card doesn't overflow downward.
   const cardWidth =
-    areaSize.h > 0
-      ? Math.min(areaSize.w, areaSize.h * CARD_ASPECT)
-      : 0
+    areaSize.h > 0 ? Math.min(areaSize.w, areaSize.h * CARD_ASPECT) : 0
 
   const onAreaLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout
     setAreaSize({ w: width, h: height })
   }
 
-  const goNext = () => {
-    if (isLast) {
-      setDeck(shuffled(ALL_CARDS))
-      setIndex(0)
-    } else {
-      setIndex(i => i + 1)
-    }
+  // ── Card dealing animation ─────────────────────────────────────────
+  // slide: -1 = fully off-screen left, 0 = centred, +1 = off-screen right.
+  // A slight rotation follows the slide so the motion reads as a physical
+  // card being dealt, not a screen transition.
+  const slide = useRef(new Animated.Value(0)).current
+  const animating = useRef(false)
+
+  const dealTo = (direction: 1 | -1, swap: () => void) => {
+    if (animating.current) return
+    animating.current = true
+    Animated.timing(slide, {
+      toValue: -direction,
+      duration: SLIDE_OUT_MS,
+      easing: Easing.in(Easing.quad),
+      useNativeDriver: true,
+    }).start(() => {
+      swap()
+      slide.setValue(direction)
+      Animated.timing(slide, {
+        toValue: 0,
+        duration: SLIDE_IN_MS,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
+        animating.current = false
+      })
+    })
   }
 
+  const goNext = () =>
+    dealTo(1, () => {
+      if (isLast) {
+        setDeck(shuffled(ALL_CARDS))
+        setIndex(0)
+      } else {
+        setIndex(i => i + 1)
+      }
+    })
+
   const goPrev = () => {
-    if (!isFirst) setIndex(i => i - 1)
+    if (isFirst) return
+    dealTo(-1, () => setIndex(i => i - 1))
   }
+
+  // ── Swipe: the card follows the finger, tilting as it moves ────────
+  // Swipe left → next; swipe right → previous. Release past 30% of the
+  // screen width (or a quick flick) completes the deal; anything less
+  // springs back. On the first card a rightward drag rubber-bands.
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) =>
+      !animating.current && Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.4,
+    onPanResponderMove: (_, g) => {
+      if (animating.current) return
+      let dx = g.dx
+      if (isFirst && dx > 0) dx *= 0.25 // rubber-band: no previous card to go to
+      slide.setValue(dx / screenW)
+    },
+    onPanResponderRelease: (_, g) => {
+      if (animating.current) return
+      const frac = g.dx / screenW
+      if (frac < -0.3 || g.vx < -0.8) {
+        goNext()
+      } else if ((frac > 0.3 || g.vx > 0.8) && !isFirst) {
+        goPrev()
+      } else {
+        Animated.spring(slide, { toValue: 0, friction: 7, useNativeDriver: true }).start()
+      }
+    },
+    onPanResponderTerminate: () => {
+      Animated.spring(slide, { toValue: 0, friction: 7, useNativeDriver: true }).start()
+    },
+  })
+
+  const translateX = slide.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: [-screenW, 0, screenW],
+  })
+  const rotate = slide.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-2.5deg', '0deg', '2.5deg'],
+  })
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top bar — fixed height so it doesn't eat into card space */}
+      {/* Top bar: Back · language toggle · counter */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
+
+        <LanguageToggle language={language} onChange={setLang} />
+
         <Text style={styles.counter}>
           {index + 1}
           <Text style={styles.counterOf}> / {deck.length}</Text>
         </Text>
       </View>
 
-      {/* Card area — takes all remaining vertical space */}
+      {/* Card area */}
       <View style={styles.cardArea} onLayout={onAreaLayout}>
         {cardWidth > 0 && (
-          <View style={{ width: cardWidth }}>
+          <Animated.View
+            {...panResponder.panHandlers}
+            style={{ width: cardWidth, transform: [{ translateX }, { rotate }] }}
+          >
             <GameCard
               card={card}
               isRevealed={true}
               isVoided={false}
               selectedCategory={null}
+              primaryLanguage={language}
             />
-          </View>
+          </Animated.View>
         )}
       </View>
 
-      {/* Navigation — fixed height */}
+      {/* Navigation tiles */}
       <View style={styles.nav}>
-        <TouchableOpacity
-          style={[styles.navBtn, isFirst && styles.navBtnDisabled]}
-          onPress={goPrev}
-          disabled={isFirst}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.navArrow, isFirst && styles.navArrowDisabled]}>←</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.navBtn, isLast && styles.navBtnReshuffle]}
-          onPress={goNext}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.navArrow}>{isLast ? '↺' : '→'}</Text>
-        </TouchableOpacity>
+        <NavTile arrow="←" disabled={isFirst} onPress={goPrev} />
+        <NavTile arrow={isLast ? '↺' : '→'} reshuffle={isLast} onPress={goNext} />
       </View>
     </SafeAreaView>
   )
 }
 
-const NAV_BTN = 72
+// ── Mini playing card navigation button ─────────────────────────────────────
+// A tiny replica of the real card's construction: white body, black border,
+// one coloured row (Movie-orange for nav, Nature-green for reshuffle) with
+// the arrow set inside it — a miniature card, not a generic icon button.
+
+function NavTile({
+  arrow,
+  onPress,
+  disabled = false,
+  reshuffle = false,
+}: {
+  arrow: string
+  onPress: () => void
+  disabled?: boolean
+  reshuffle?: boolean
+}) {
+  const stripeColour = disabled
+    ? '#E4D9BC'
+    : reshuffle
+      ? CATEGORY_COLOURS.Nature
+      : CATEGORY_COLOURS.Movie
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.miniCard,
+        disabled && styles.miniCardDisabled,
+        pressed && !disabled && styles.miniCardPressed,
+      ]}
+    >
+      <View style={[styles.miniStripe, { backgroundColor: stripeColour }]}>
+        <Text style={[styles.navArrow, disabled && styles.navArrowDisabled]}>{arrow}</Text>
+      </View>
+    </Pressable>
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: CREAM,
     paddingHorizontal: 20,
     paddingBottom: 12,
     gap: 12,
@@ -132,63 +268,81 @@ const styles = StyleSheet.create({
   backBtn: {
     paddingVertical: 8,
     paddingRight: 12,
+    minWidth: 74,
   },
   backText: {
+    fontFamily: 'Quicksand_700Bold',
     fontSize: 16,
-    fontWeight: '600',
-    color: '#555555',
+    color: '#6B5B3E',
   },
   counter: {
     fontFamily: 'BalooChettan2_700Bold',
     fontSize: 22,
-    color: '#111111',
+    color: BRAND_COLOURS.ink,
+    minWidth: 74,
+    textAlign: 'right',
   },
   counterOf: {
     fontFamily: 'BalooChettan2_700Bold',
-    color: '#999999',
+    color: '#B4A582',
   },
+
 
   cardArea: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
 
   nav: {
-    height: NAV_BTN + 8,
+    height: MINI_CARD_H + 16,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 40,
+    gap: 36,
   },
-  navBtn: {
-    width: NAV_BTN,
-    height: NAV_BTN,
-    borderRadius: NAV_BTN / 2,
-    backgroundColor: '#111111',
+  miniCard: {
+    width: MINI_CARD_W,
+    height: MINI_CARD_H,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: '#000000',
+    backgroundColor: '#FFFFFF',
+    padding: 5,
     justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#7a4a00',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.28,
     shadowRadius: 6,
-    elevation: 6,
+    elevation: 5,
   },
-  navBtnDisabled: {
-    backgroundColor: '#DDDDDD',
+  miniCardPressed: {
+    transform: [{ scale: 0.94 }, { translateY: 2 }],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    elevation: 2,
+  },
+  miniCardDisabled: {
     shadowOpacity: 0,
     elevation: 0,
+    borderColor: 'rgba(0,0,0,0.25)',
   },
-  navBtnReshuffle: {
-    backgroundColor: '#33A44F',
+  miniStripe: {
+    flex: 1,
+    borderRadius: 5,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   navArrow: {
-    fontFamily: 'BalooChettan2_700Bold',
-    fontSize: 30,
-    color: '#FFFFFF',
-    lineHeight: 36,
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#000000',
+    lineHeight: 28,
   },
   navArrowDisabled: {
-    color: '#AAAAAA',
+    color: 'rgba(0,0,0,0.3)',
   },
 })

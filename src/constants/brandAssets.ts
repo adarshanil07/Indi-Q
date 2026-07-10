@@ -35,4 +35,8 @@ export const BRAND_COLOURS = {
   yellow: '#f7ef4c',
   /** Dark ink used on light buttons */
   ink: '#1A1A1A',
+  /** Warm cream "table" background used on play screens */
+  cream: '#FFF6E3',
+  /** Warm brown for secondary text on cream */
+  hint: '#6B5B3E',
 }
