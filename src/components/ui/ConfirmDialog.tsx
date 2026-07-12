@@ -32,7 +32,13 @@ export function ConfirmDialog({
   onConfirm,
 }: Props) {
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal
+      testID="confirm-dialog-modal"
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.title}>{title}</Text>

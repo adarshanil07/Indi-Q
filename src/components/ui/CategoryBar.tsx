@@ -28,6 +28,7 @@ export function CategoryBar({ selectedCategory, onSelect, interactive = true }: 
         return (
           <TouchableOpacity
             key={cat}
+            testID={`category-box-${cat}`}
             style={[
               styles.box,
               isDimmed && styles.boxDimmed,

@@ -69,6 +69,7 @@ export function GameCard({
 
   return (
     <TouchableOpacity
+      testID={`game-card-${card.id}`}
       style={[styles.card, { borderRadius: cornerRadius }]}
       onLayout={e => setCardWidth(e.nativeEvent.layout.width)}
       onPress={!isRevealed ? onTapToReveal : undefined}
