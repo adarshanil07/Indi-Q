@@ -11,7 +11,9 @@ import { SvgXml } from 'react-native-svg'
 import { router } from 'expo-router'
 import { useGame } from '@/store/GameContext'
 import { CATEGORY_BOX_SVGS } from '@/constants/cardSvg'
-import { BORDER_RADIUS, COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
+import { BRAND_COLOURS } from '@/constants/brandAssets'
+import { teamColourFor } from '@/constants/teams'
+import { BORDER_RADIUS, FONT_SIZE, SPACING } from '@/constants/theme'
 import type { Category, CompletedWord } from '@/types/game'
 
 interface RoundGroup {
@@ -77,7 +79,12 @@ export default function CompletedWordsScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
           {groups.map(group => (
-            <RoundBox key={group.key} group={group} teamName={teamName(group.teamId)} />
+            <RoundBox
+              key={group.key}
+              group={group}
+              teamName={teamName(group.teamId)}
+              teamColour={teamColourFor(teams, group.teamId)}
+            />
           ))}
         </ScrollView>
       )}
@@ -85,15 +92,24 @@ export default function CompletedWordsScreen() {
   )
 }
 
-function RoundBox({ group, teamName }: { group: RoundGroup; teamName: string }) {
+function RoundBox({
+  group,
+  teamName,
+  teamColour,
+}: {
+  group: RoundGroup
+  teamName: string
+  teamColour: string
+}) {
   return (
     <View style={boxStyles.box}>
-      {/* Round header: vector category box + category + team */}
+      {/* Round header: vector category box + category + team (identity chip) */}
       <View style={boxStyles.headerRow}>
         <SvgXml xml={CATEGORY_BOX_SVGS[group.category]} width={30} height={30} />
         <Text style={boxStyles.category}>
           {group.isChakra ? '☸ Chakra' : group.category}
         </Text>
+        <View style={[boxStyles.teamChip, { backgroundColor: teamColour }]} />
         <Text style={boxStyles.team} numberOfLines={1}>
           {teamName}
         </Text>
@@ -121,7 +137,7 @@ function RoundBox({ group, teamName }: { group: RoundGroup; teamName: string }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLOURS.background,
+    backgroundColor: BRAND_COLOURS.cream,
     paddingHorizontal: SPACING.xl,
   },
   header: {
@@ -131,7 +147,7 @@ const styles = StyleSheet.create({
   },
   back: {
     fontSize: FONT_SIZE.md,
-    color: COLOURS.textSecondary,
+    color: BRAND_COLOURS.hint,
   },
   titleRow: {
     flexDirection: 'row',
@@ -141,12 +157,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xl,
     fontWeight: '800',
-    color: COLOURS.textPrimary,
+    color: BRAND_COLOURS.ink,
   },
   count: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '800',
-    color: COLOURS.textSecondary,
+    color: BRAND_COLOURS.hint,
   },
   list: {
     gap: SPACING.md,
@@ -161,17 +177,19 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
-    color: COLOURS.textPrimary,
+    color: BRAND_COLOURS.ink,
   },
   emptySub: {
     fontSize: FONT_SIZE.md,
-    color: COLOURS.textSecondary,
+    color: BRAND_COLOURS.hint,
   },
 })
 
 const boxStyles = StyleSheet.create({
   box: {
-    backgroundColor: COLOURS.surface,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     gap: SPACING.xs,
@@ -185,12 +203,19 @@ const boxStyles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.md,
     fontWeight: '800',
-    color: COLOURS.textPrimary,
+    color: BRAND_COLOURS.ink,
+  },
+  teamChip: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#000000',
   },
   team: {
     fontSize: FONT_SIZE.sm,
     fontWeight: '700',
-    color: COLOURS.textSecondary,
+    color: BRAND_COLOURS.hint,
     maxWidth: 140,
   },
   divider: {
@@ -207,13 +232,13 @@ const boxStyles = StyleSheet.create({
   word: {
     fontFamily: 'Quicksand_700Bold',
     fontSize: FONT_SIZE.md,
-    color: COLOURS.textPrimary,
+    color: BRAND_COLOURS.ink,
     flexShrink: 1,
   },
   wordMl: {
     fontFamily: 'BalooChettan2_500Medium',
     fontSize: FONT_SIZE.sm,
-    color: COLOURS.textSecondary,
+    color: BRAND_COLOURS.hint,
     flexShrink: 1,
   },
 })

@@ -9,7 +9,8 @@
 // =============================================================================
 
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { BORDER_RADIUS, COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
+import { BRAND_COLOURS } from '@/constants/brandAssets'
+import { CATEGORY_COLOURS } from '@/constants/categories'
 
 interface Props {
   visible: boolean
@@ -60,54 +61,60 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
+    paddingHorizontal: 32,
   },
   sheet: {
-    backgroundColor: COLOURS.background,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.xl,
+    backgroundColor: BRAND_COLOURS.cream,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderColor: '#000000',
+    padding: 24,
     width: '100%',
     maxWidth: 420,
-    gap: SPACING.md,
+    gap: 14,
   },
   title: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '800',
-    color: COLOURS.textPrimary,
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 22,
+    color: BRAND_COLOURS.ink,
+    lineHeight: 30,
   },
   message: {
-    fontSize: FONT_SIZE.md,
-    color: COLOURS.textSecondary,
-    lineHeight: 24,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 15,
+    color: BRAND_COLOURS.hint,
+    lineHeight: 22,
   },
   buttons: {
     flexDirection: 'row',
-    gap: SPACING.sm,
-    marginTop: SPACING.xs,
+    gap: 10,
+    marginTop: 4,
   },
   btn: {
     flex: 1,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: 13,
+    borderRadius: 999,
+    borderWidth: 2.5,
+    borderColor: '#000000',
     alignItems: 'center',
   },
   btnCancel: {
-    backgroundColor: COLOURS.surface,
+    backgroundColor: '#FFFFFF',
   },
   btnCancelText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '600',
-    color: COLOURS.textPrimary,
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 15,
+    color: BRAND_COLOURS.ink,
   },
   btnConfirm: {
-    backgroundColor: COLOURS.textPrimary,
+    backgroundColor: BRAND_COLOURS.orange,
   },
   btnDestructive: {
-    backgroundColor: COLOURS.danger,
+    backgroundColor: CATEGORY_COLOURS.Random,
   },
   btnConfirmText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 15,
     color: '#FFFFFF',
   },
 })

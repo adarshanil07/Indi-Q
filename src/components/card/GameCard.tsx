@@ -1,5 +1,13 @@
-import { Fragment, useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, type DimensionValue } from 'react-native'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  type DimensionValue,
+} from 'react-native'
 import { SvgXml } from 'react-native-svg'
 import type { Card, Category } from '@/types/game'
 import { CATEGORIES, CATEGORY_COLOURS } from '@/constants/categories'
@@ -30,15 +38,26 @@ interface Props {
   selectedCategory: Category | null
   onTapToReveal?: () => void
   /**
-   * When true, the hidden-card overlay reads "TIME'S UP" instead of
-   * "TAP TO REVEAL" (Section 6.5 — cards re-blur when the timer expires).
+   * When true, the card is in the post-timer state: content hidden behind
+   * the dark overlay (Section 6.5 — cards re-blur when the timer expires).
    */
   isTimeUp?: boolean
+  /**
+   * Whether THIS card carries the "TIME'S UP" message. Only one card in a
+   * stack should (the top playable one) — the rest hide silently.
+   */
+  showTimeUpText?: boolean
   /**
    * When true, the hidden-card overlay explains that the card cannot be
    * revealed until a category has been selected.
    */
   needsCategory?: boolean
+  /**
+   * Which language is the card's MAIN text. 'en' (default): English big and
+   * black, Malayalam small and grey. 'ml': swapped. Cards missing wordsMl
+   * fall back to English-primary regardless.
+   */
+  primaryLanguage?: 'en' | 'ml'
 }
 
 // Text sizes are proportional to the rendered card width so lettering keeps
@@ -58,7 +77,9 @@ export function GameCard({
   selectedCategory,
   onTapToReveal,
   isTimeUp = false,
+  showTimeUpText = true,
   needsCategory = false,
+  primaryLanguage = 'en',
 }: Props) {
   const [cardWidth, setCardWidth] = useState(0)
 
@@ -66,6 +87,22 @@ export function GameCard({
   const wordMlSize = cardWidth > 0 ? cardWidth * WORD_ML_SIZE_RATIO : 13
   const overlayLabelSize = cardWidth > 0 ? cardWidth * OVERLAY_LABEL_RATIO : 20
   const cornerRadius = cardWidth > 0 ? cardWidth * CORNER_RADIUS_RATIO : 10
+  const stampFontSize = cardWidth > 0 ? cardWidth * 0.085 : 30
+
+  // Silent hide: time's up but this card doesn't carry the message
+  const overlaySilent = isTimeUp && !showTimeUpText
+
+  // The dark cover lifts away on reveal (and settles back at time's up)
+  // instead of blinking in and out.
+  const coverOpacity = useRef(new Animated.Value(isRevealed ? 0 : 1)).current
+  useEffect(() => {
+    Animated.timing(coverOpacity, {
+      toValue: isRevealed ? 0 : 1,
+      duration: isRevealed ? 240 : 320,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start()
+  }, [isRevealed, coverOpacity])
 
   return (
     <TouchableOpacity
@@ -83,6 +120,15 @@ export function GameCard({
         const isDimmed = isRevealed && selectedCategory !== null && cat !== selectedCategory
         const isChakra = card.chakraCategory === cat
 
+        // Language swap: which string is big-and-black vs small-and-grey.
+        // Each language keeps its own typeface in either role.
+        const mlWord = card.wordsMl?.[cat]
+        const mlIsPrimary = primaryLanguage === 'ml' && mlWord != null
+        const primaryText = mlIsPrimary ? mlWord : card.words[cat]
+        const subText = mlIsPrimary ? card.words[cat] : mlWord
+        const primaryFont = mlIsPrimary ? 'BalooChettan2_700Bold' : 'Quicksand_700Bold'
+        const subFont = mlIsPrimary ? 'Quicksand_700Bold' : 'BalooChettan2_500Medium'
+
         // Overlays must be direct children of the card so percentage `top`
         // values resolve against the card's height, not a zero-height wrapper.
         return (
@@ -97,19 +143,22 @@ export function GameCard({
             >
               {isRevealed && (
                 <View style={styles.wordRow}>
-                  {/* English word never shrinks in favour of the Malayalam —
+                  {/* The main word never shrinks in favour of the sub text —
                       it only scales down once it alone exceeds the band. */}
                   <Text
-                    style={[styles.word, { fontSize: wordSize }]}
+                    style={[styles.word, { fontSize: wordSize, fontFamily: primaryFont }]}
                     numberOfLines={1}
                     adjustsFontSizeToFit
                     minimumFontScale={0.3}
                   >
-                    {card.words[cat]}
+                    {primaryText}
                   </Text>
-                  {card.wordsMl?.[cat] != null && (
-                    <Text style={[styles.wordMl, { fontSize: wordMlSize }]} numberOfLines={1}>
-                      {card.wordsMl[cat]}
+                  {subText != null && (
+                    <Text
+                      style={[styles.wordMl, { fontSize: wordMlSize, fontFamily: subFont }]}
+                      numberOfLines={1}
+                    >
+                      {subText}
                     </Text>
                   )}
                 </View>
@@ -132,26 +181,28 @@ export function GameCard({
         )
       })}
 
-      {/* Unrevealed / time's-up overlay */}
-      {!isRevealed && (
-        <View style={styles.overlay} pointerEvents="none">
-          <Text style={[styles.overlayLabel, { fontSize: overlayLabelSize }]}>
-            {isTimeUp ? "TIME'S UP" : needsCategory ? 'SELECT A CATEGORY' : 'TAP TO REVEAL'}
-          </Text>
-          <Text style={styles.overlaySub}>
-            {isTimeUp
-              ? 'Confirm the end of the round below'
-              : needsCategory
-                ? 'Tap to reveal is locked until a category is chosen below'
-                : 'Pass the phone to the describer first'}
-          </Text>
-        </View>
-      )}
+      {/* Unrevealed / time's-up cover — kept mounted, opacity animated */}
+      <Animated.View style={[styles.overlay, { opacity: coverOpacity }]} pointerEvents="none">
+        {!isRevealed && !overlaySilent && (
+          <>
+            <Text style={[styles.overlayLabel, { fontSize: overlayLabelSize }]}>
+              {isTimeUp ? "TIME'S UP" : needsCategory ? 'SELECT A CATEGORY' : 'TAP TO REVEAL'}
+            </Text>
+            <Text style={styles.overlaySub}>
+              {isTimeUp
+                ? 'Confirm the end of the round below'
+                : needsCategory
+                  ? 'Tap to reveal is locked until a category is chosen below'
+                  : 'Pass the phone to the describer first'}
+            </Text>
+          </>
+        )}
+      </Animated.View>
 
-      {/* Voided overlay */}
+      {/* Voided: quiet dark wash with plain lettering — no badge */}
       {isVoided && (
         <View style={styles.voidOverlay} pointerEvents="none">
-          <Text style={styles.voidLabel}>VOID</Text>
+          <Text style={[styles.voidText, { fontSize: stampFontSize }]}>VOID</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -252,14 +303,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  voidLabel: {
-    fontFamily: 'BalooChettan2_700Bold',
-    fontSize: 40,
-    color: '#ED1C24',
+  voidText: {
+    fontFamily: 'Quicksand_700Bold',
+    color: '#E4535A',
     letterSpacing: 6,
   },
 })

@@ -5,7 +5,7 @@ import {
   BalooChettan2_500Medium,
   BalooChettan2_700Bold,
 } from '@expo-google-fonts/baloo-chettan-2'
-import { useFonts, Quicksand_700Bold } from '@expo-google-fonts/quicksand'
+import { useFonts, Quicksand_500Medium, Quicksand_700Bold } from '@expo-google-fonts/quicksand'
 import * as SplashScreen from 'expo-splash-screen'
 import { GameProvider } from '@/store/GameContext'
 import { IntroSequence } from '@/components/intro/IntroSequence'
@@ -17,6 +17,7 @@ export default function RootLayout() {
   // lettering. Baloo Chettan 2: Malayalam-script companion for the grey
   // Malayalam text beside each word.
   const [fontsLoaded, fontError] = useFonts({
+    Quicksand_500Medium,
     Quicksand_700Bold,
     BalooChettan2_500Medium,
     BalooChettan2_700Bold,

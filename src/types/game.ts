@@ -212,11 +212,32 @@ export interface TurnState {
   selectedCategory: Category | null
 
   /**
+   * True after a false-start Restart when a category had already been chosen:
+   * the physical game does not allow switching category mid-turn, so the
+   * restarted turn keeps the original category and the picker is locked.
+   */
+  categoryLocked?: boolean
+
+  /**
+   * True when this turn plays each card's ☸ word instead of a picked
+   * category: chakra bonus turns, and board-mode turns started while
+   * sitting on a ☸ space.
+   */
+  chakraWords?: boolean
+
+  /**
    * Timestamp (ms) when the card was revealed and the timer started.
    * null when phase is 'waiting' or 'ended'.
    * Use (Date.now() - timerStartedAt) to compute elapsed time.
    */
   timerStartedAt: number | null
+
+  /**
+   * Pre-turn cardUsage snapshots for cards scored this turn, captured at the
+   * moment each MARK_CORRECT mutates usage. Moved into the TurnSummary at
+   * turn end so Undo can restore usage tracking exactly.
+   */
+  usagePrev?: Record<string, Category[]>
 }
 
 
@@ -235,18 +256,23 @@ export interface TurnState {
  *   - Restore activeTeamIndex to teamIndex.
  */
 export interface TurnSummary {
+  /** What kind of round this summary records. Absent = normal turn
+   *  (kept optional for backwards compatibility with older state shapes). */
+  kind?: 'turn' | 'chakra'
+
   teamId: string
 
   /** The index in GameState.teams[] of the team who played this turn.
+   *  (For chakra rounds: the team whose turn slot the round replaced.)
    *  Used to restore activeTeamIndex when undoing. */
   teamIndex: number
 
-  /** How many correct answers were logged. Subtracted from team.score on undo. */
+  /** How many points were gained. Subtracted from teamId's score on undo. */
   scoreGained: number
 
   /**
-   * Every card ID that was in play this turn (correct, skipped, or unanswered).
-   * Returned to the top of the deck on undo so the game state is fully restored.
+   * Every card ID that was in play this round (correct, skipped, unanswered,
+   * or offered in a chakra round). Returned to the deck on undo.
    */
   cardIds: string[]
 
@@ -256,6 +282,34 @@ export interface TurnSummary {
    * GameState.resumeTeamIndex correctly.
    */
   resumeTeamIndex?: number
+
+  /**
+   * Snapshot of cardUsage entries (for the cards played this round) taken
+   * BEFORE the round mutated them, so Undo can restore usage tracking
+   * exactly instead of leaving undone words marked as played.
+   */
+  usagePrev?: Record<string, Category[]>
+
+  /** GameState.finalRound value before this round resolved (for undo). */
+  finalRoundPrev?: FinalRoundState | null
+
+  /**
+   * Board mode: teamId's space index BEFORE this round moved their piece
+   * (turn movement, or a chakra reward advance). Restored on undo.
+   */
+  boardPosPrev?: number
+}
+
+/**
+ * Articulate's fairness rule (mirrors board-mode Section 8.5 for target-score
+ * play): when a team first reaches the target, every OTHER team gets exactly
+ * one final turn before the game ends and the highest score wins.
+ */
+export interface FinalRoundState {
+  /** Team that first reached the target. */
+  triggeredBy: string
+  /** How many final turns are still owed before the game ends. */
+  turnsLeft: number
 }
 
 
@@ -386,6 +440,20 @@ export interface GameState {
    * Displayed on the Completed Words screen.
    */
   completedWords: CompletedWord[]
+
+  /**
+   * Non-null while the end-of-game fairness round is running: the target has
+   * been reached and the remaining teams are taking their one final turn
+   * each. The game finishes when turnsLeft reaches 0.
+   */
+  finalRound: FinalRoundState | null
+
+  /**
+   * Board mode only: each team's space index (aligned with `teams`).
+   * All teams start on space 0; pieces advance one space per correct answer
+   * at turn end. Empty array in no-board mode.
+   */
+  boardPositions: number[]
 
   // boardState?: BoardState
   // ↑ Uncomment when the board overlay is built (Section 8).

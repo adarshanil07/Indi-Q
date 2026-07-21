@@ -1,6 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native'
+// =============================================================================
+// components/ui/CountdownTimer.tsx
+// The timer is a card row: a black-bordered band whose colour fill drains
+// left-to-right as time runs out, stepping Nature-green → Movie-orange →
+// Random-red (the deck's own colours), with big Baloo numerals inside.
+//
+// The fill glides continuously (not in one-second steps), and in the final
+// five seconds the numerals get a heartbeat pulse.
+// =============================================================================
+
+import { useEffect, useRef } from 'react'
+import { Animated, Easing, StyleSheet, View } from 'react-native'
 import { useCountdown } from '@/hooks/useCountdown'
-import { COLOURS, FONT_SIZE, SPACING } from '@/constants/theme'
+import { CATEGORY_COLOURS } from '@/constants/categories'
 
 interface Props {
   timerStartedAt: number | null
@@ -15,35 +26,75 @@ export function CountdownTimer({ timerStartedAt, durationSeconds, onExpired }: P
   const isWarning = secondsRemaining <= 10 && isRunning
   const isCritical = secondsRemaining <= 5 && isRunning
 
-  const displayTime = formatTime(secondsRemaining)
-  const progress = secondsRemaining / durationSeconds
+  // Continuous drain: one linear animation from the current fraction to 0
+  // over exactly the remaining time. Resets to full while waiting.
+  const fill = useRef(new Animated.Value(1)).current
+  useEffect(() => {
+    if (timerStartedAt === null) {
+      fill.stopAnimation()
+      fill.setValue(1)
+      return
+    }
+    const elapsed = Date.now() - timerStartedAt
+    const remainingMs = Math.max(0, durationSeconds * 1000 - elapsed)
+    fill.setValue(remainingMs / (durationSeconds * 1000))
+    Animated.timing(fill, {
+      toValue: 0,
+      duration: remainingMs,
+      easing: Easing.linear,
+      useNativeDriver: false, // width animation
+    }).start()
+    return () => fill.stopAnimation()
+  }, [timerStartedAt, durationSeconds, fill])
+
+  // Heartbeat on the numerals in the final five seconds
+  const beat = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    if (!isCritical) {
+      beat.stopAnimation()
+      beat.setValue(0)
+      return
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(beat, { toValue: 1, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(beat, { toValue: 0, duration: 320, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.delay(500),
+      ]),
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [isCritical, beat])
+
+  const fillColour = isCritical
+    ? CATEGORY_COLOURS.Random
+    : isWarning
+      ? CATEGORY_COLOURS.Movie
+      : CATEGORY_COLOURS.Nature
 
   return (
-    <View style={styles.container}>
-      <Text
+    <View style={styles.band}>
+      <Animated.View
+        style={[
+          styles.fill,
+          {
+            backgroundColor: fillColour,
+            width: fill.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+          },
+        ]}
+      />
+      <Animated.Text
         style={[
           styles.time,
-          isWarning && styles.timeWarning,
-          isCritical && styles.timeCritical,
+          {
+            transform: [
+              { scale: beat.interpolate({ inputRange: [0, 1], outputRange: [1, 1.14] }) },
+            ],
+          },
         ]}
       >
-        {displayTime}
-      </Text>
-      <View style={styles.track}>
-        <View
-          style={[
-            styles.bar,
-            {
-              width: `${Math.round(Math.max(0, Math.min(1, progress)) * 100)}%`,
-              backgroundColor: isCritical
-                ? COLOURS.danger
-                : isWarning
-                  ? COLOURS.skip
-                  : COLOURS.correct,
-            },
-          ]}
-        />
-      </View>
+        {formatTime(secondsRemaining)}
+      </Animated.Text>
     </View>
   )
 }
@@ -56,32 +107,27 @@ function formatTime(seconds: number): string {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  band: {
+    height: 54,
+    borderRadius: 10,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: SPACING.sm,
+  },
+  fill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
   },
   time: {
-    fontSize: 56,
-    fontWeight: '900',
-    color: COLOURS.textPrimary,
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 28,
+    color: '#000000',
+    lineHeight: 36,
     fontVariant: ['tabular-nums'],
-    lineHeight: 60,
-  },
-  timeWarning: {
-    color: COLOURS.skip,
-  },
-  timeCritical: {
-    color: COLOURS.danger,
-  },
-  track: {
-    width: '100%',
-    height: 6,
-    backgroundColor: COLOURS.surface,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  bar: {
-    height: '100%',
-    borderRadius: 3,
   },
 })

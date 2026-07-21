@@ -55,6 +55,15 @@ export type GameAction =
       type: 'SKIP'
     }
   | {
+      /**
+       * Reverse a single mis-tapped Correct within the CURRENT turn: the
+       * point is removed, the word leaves the log, and the card returns to
+       * the active stack so it is back in play.
+       */
+      type: 'UNDO_CORRECT'
+      cardId: string
+    }
+  | {
       type: 'TIMER_EXPIRED'
     }
   | {
@@ -89,6 +98,14 @@ export type GameAction =
        * from state.deck and transitions phase → 'chakra'.
        */
       type: 'TRIGGER_CHAKRA'
+    }
+  | {
+      /**
+       * Back out of a Chakra round during card selection (accidental trigger).
+       * The offered cards return to the deck and the SAME team's normal turn
+       * resumes — rotation does not advance.
+       */
+      type: 'CANCEL_CHAKRA'
     }
   | {
       type: 'SELECT_CHAKRA_CARD'
