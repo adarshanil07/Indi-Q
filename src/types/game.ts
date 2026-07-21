@@ -219,6 +219,13 @@ export interface TurnState {
   categoryLocked?: boolean
 
   /**
+   * True when this turn plays each card's ☸ word instead of a picked
+   * category: chakra bonus turns, and board-mode turns started while
+   * sitting on a ☸ space.
+   */
+  chakraWords?: boolean
+
+  /**
    * Timestamp (ms) when the card was revealed and the timer started.
    * null when phase is 'waiting' or 'ended'.
    * Use (Date.now() - timerStartedAt) to compute elapsed time.

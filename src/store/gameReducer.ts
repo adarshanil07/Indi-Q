@@ -72,11 +72,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const team = state.teams[state.activeTeamIndex]
 
       // Board mode: the space the team is ON dictates the category (§8.2).
-      // ☸ and FINISH spaces have none — the team chooses freely that turn.
+      // Sitting on a ☸ space means the turn plays each card's ☸ word instead
+      // of a category — the same rule chakra BONUS turns always follow.
+      const isBonus = state.resumeTeamIndex !== null
       let boardCategory: TurnState['selectedCategory'] = null
-      if (state.config.boardMode) {
+      let chakraWords = isBonus
+      if (state.config.boardMode && !isBonus) {
         const space = spaceAt(state.boardPositions[state.activeTeamIndex] ?? 0)
         if (space.type === 'category') boardCategory = space.category
+        else if (space.type === 'chakra') chakraWords = true
       }
 
       const freshTurn: TurnState = {
@@ -87,7 +91,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         correctIds: [],
         voidedIds: [],
         selectedCategory: boardCategory,
-        categoryLocked: boardCategory !== null,
+        categoryLocked: boardCategory !== null || chakraWords,
+        chakraWords,
         timerStartedAt: null,
       }
 
@@ -136,10 +141,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let { deck, cardUsage } = state
       let discardPile = [...state.discardPile, card]
 
-      // Chakra bonus turns play each card's own ☸ word — the effective
-      // category comes from the card, not from a picker.
-      const isBonusTurn = state.resumeTeamIndex !== null
-      const effectiveCategory = isBonusTurn ? card.chakraCategory : turn.selectedCategory
+      // Chakra-words turns (bonus turns, or sitting on a ☸ space) play each
+      // card's own ☸ word — the effective category comes from the card.
+      const effectiveCategory = turn.chakraWords ? card.chakraCategory : turn.selectedCategory
 
       let completedWords = state.completedWords
       let usagePrev = turn.usagePrev ?? {}
