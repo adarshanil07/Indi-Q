@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   UIManager,
+  useWindowDimensions,
   View,
 } from 'react-native'
 import type { Card, Category, TurnPhase } from '@/types/game'
@@ -95,16 +96,28 @@ export function CardStack({
   const firstPlayable = cards.findIndex(c => !voidedIds.includes(c.id))
   const messageIndex = firstPlayable === -1 ? 0 : firstPlayable
 
+  // Entrance direction per card: a card that GREW the stack (skip, void
+  // replacement, un-correct) drops in from the TOP and pushes the rest down;
+  // a replacement or the opening card deals in from the side.
+  const prevIdsRef = useRef<string[]>([])
+  const prevIds = prevIdsRef.current
+  const stackGrew = cards.length > prevIds.length && prevIds.length > 0
+  useEffect(() => {
+    prevIdsRef.current = cards.map(c => c.id)
+  })
+
   return (
     <Animated.View style={[styles.container, { transform: [{ rotate: wobbleDeg }] }]}>
       {cards.map((card, index) => {
         const isTopCard = index === 0
         const isVoided = voidedIds.includes(card.id)
         const isAlreadyCorrect = correctIds.includes(card.id)
+        const isNewCard = !prevIds.includes(card.id)
 
         return (
           <StackCard
             key={card.id}
+            entrance={isNewCard && stackGrew ? 'top' : 'side'}
             onCorrect={() => {
               animateReflow()
               onCorrect(card.id)
@@ -167,26 +180,36 @@ export function CardStack({
 }
 
 // ── StackCard ───────────────────────────────────────────────────────────────
-// Owns the card's life-cycle motion: deals IN on mount (slide from the right
-// settling flat, like Just Cards), and flies OFF upward when marked correct —
-// the dispatch fires once the card has visually left.
+// Owns the card's life-cycle motion.
+//   Entrance 'side' — deals in from the right, settling flat (opening card
+//                     and post-correct replacements, like Just Cards' enter).
+//   Entrance 'top'  — drops in from above, pushing the stack down (skips,
+//                     void replacements).
+//   Correct exit    — slides off to the LEFT with a slight tilt, identical
+//                     to Just Cards' next-arrow motion; the dispatch fires
+//                     once the card has visually left.
 
 function StackCard({
+  entrance,
   onCorrect,
   children,
 }: {
+  entrance: 'side' | 'top'
   onCorrect: () => void
   children: (api: { flyOff: () => void }) => React.ReactNode
 }) {
+  const { width: screenW } = useWindowDimensions()
   const anim = useRef(new Animated.Value(0)).current // 0 = entering, 1 = settled
   const exit = useRef(new Animated.Value(0)).current // 0 = in place, 1 = gone
   const [leaving, setLeaving] = useState(false)
   const firedRef = useRef(false)
+  // Lock the entrance direction at mount — re-renders must not change it
+  const entranceRef = useRef(entrance)
 
   useEffect(() => {
     Animated.timing(anim, {
       toValue: 1,
-      duration: 260,
+      duration: entranceRef.current === 'top' ? 240 : 210,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start()
@@ -198,27 +221,44 @@ function StackCard({
     setLeaving(true)
     Animated.timing(exit, {
       toValue: 1,
-      duration: 200,
+      duration: 170,
       easing: Easing.in(Easing.quad),
       useNativeDriver: true,
     }).start(() => onCorrect())
   }
 
+  const fromTop = entranceRef.current === 'top'
+
   return (
     <Animated.View
       pointerEvents={leaving ? 'none' : 'auto'}
       style={{
-        opacity: Animated.multiply(
-          anim,
-          exit.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
-        ),
+        opacity: anim,
         transform: [
-          { translateX: anim.interpolate({ inputRange: [0, 1], outputRange: [56, 0] }) },
-          { translateY: exit.interpolate({ inputRange: [0, 1], outputRange: [0, -48] }) },
           {
-            rotate: anim.interpolate({ inputRange: [0, 1], outputRange: ['1.6deg', '0deg'] }),
+            // Enter: from the right (side) or not at all (top).
+            // Exit: off to the LEFT across the full screen — Just Cards' deal.
+            translateX: Animated.add(
+              anim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [fromTop ? 0 : screenW * 0.6, 0],
+              }),
+              exit.interpolate({ inputRange: [0, 1], outputRange: [0, -screenW] }),
+            ),
           },
-          { scale: exit.interpolate({ inputRange: [0, 1], outputRange: [1, 0.96] }) },
+          {
+            translateY: anim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [fromTop ? -72 : 0, 0],
+            }),
+          },
+          {
+            // Settle-in tilt on side entrances; Just Cards' -2.5° tilt on exit
+            rotate: Animated.add(
+              anim.interpolate({ inputRange: [0, 1], outputRange: [fromTop ? 0 : 0.028, 0] }),
+              exit.interpolate({ inputRange: [0, 1], outputRange: [0, -0.044] }),
+            ).interpolate({ inputRange: [-1, 1], outputRange: ['-57.3deg', '57.3deg'] }),
+          },
         ],
       }}
     >
