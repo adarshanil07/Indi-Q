@@ -126,7 +126,8 @@ export default function SetupScreen() {
       chakraCardCount,
       chakraReward,
       boardMode,
-      targetScore,
+      // Target score is a no-board concept — never leaks into board games
+      targetScore: boardMode ? undefined : targetScore,
     })
 
     router.replace('/game')
@@ -210,8 +211,8 @@ export default function SetupScreen() {
             />
             <Text style={styles.hint}>
               {isUnlimitedSkips(maxActiveCards)
-                ? 'Unlimited — skip as often as you like; every skipped card stays on screen.'
-                : 'Maximum cards on screen at once — skipping draws a new card alongside the current one.'}
+                ? 'Unlimited: skip as often as you like; every skipped card stays on screen.'
+                : 'Maximum cards on screen at once. Skipping draws a new card alongside the current one.'}
             </Text>
           </SectionCard>
 

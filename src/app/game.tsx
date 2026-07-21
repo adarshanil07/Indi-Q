@@ -60,7 +60,7 @@ const CONFIRM_COPY: Record<Exclude<PendingConfirm, null>, {
 }> = {
   undo: {
     title: 'Undo Last Turn',
-    message: 'This will reverse the previous turn — scores, cards, and team order will be restored.',
+    message: 'This will reverse the previous turn: scores, cards, and team order will be restored.',
     confirmLabel: 'Undo',
   },
   end: {
@@ -99,18 +99,25 @@ export default function GameScreen() {
     }
   }, [state.phase])
 
+  // Board ☸ landings pause on a "landed" screen (board stays mounted, the
+  // walk animation plays) until the player taps into the chakra round.
+  // Synchronous gating — the ChakraRound tree must never mount first, or the
+  // board unmounts and the walk is lost.
+  const [chakraEntered, setChakraEntered] = useState(false)
+  useEffect(() => {
+    if (state.phase !== 'chakra') setChakraEntered(false)
+  }, [state.phase])
+
   // ── Dispatch wrappers ─────────────────────────────────────────────────
   const handleTimerExpired = useCallback(
     () => dispatch({ type: 'TIMER_EXPIRED' }),
     [dispatch],
   )
 
-  // A category must exist before reveal in EVERY mode now (board turns get
-  // it from the space; ☸-space turns pick freely). Chakra bonus turns need
-  // none — each card plays its own ☸ word.
+  // A category must exist before reveal unless the turn plays ☸ words
+  // (bonus turns, or board turns started on a ☸ space).
   const handleReveal = () => {
-    const isBonus = state.resumeTeamIndex !== null
-    if (!isBonus && !state.currentTurn?.selectedCategory) return
+    if (!state.currentTurn?.chakraWords && !state.currentTurn?.selectedCategory) return
     dispatch({ type: 'REVEAL_CARD' })
   }
   const handleSelectCategory = (cat: Category) => dispatch({ type: 'SELECT_CATEGORY', category: cat })
@@ -161,28 +168,9 @@ export default function GameScreen() {
     finalRound && (teams.find(t => t.id === finalRound.triggeredBy)?.name ?? '')
 
   // Utility availability — buttons never move, they fade.
-  const canUndo = currentTurn === null && state.turnHistory.length > 0
+  const canUndo =
+    state.phase === 'playing' && currentTurn === null && state.turnHistory.length > 0
   const canRestart = currentTurn?.phase === 'active'
-
-  // ── Phase: Chakra round ───────────────────────────────────────────────
-  if (state.phase === 'chakra' && state.chakraState) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ChakraRound
-          chakraState={state.chakraState}
-          teams={teams}
-          reward={config.chakraReward}
-          primaryLanguage={language}
-          onSelectCard={handleSelectChakraCard}
-          onTeamWon={handleChakraWinner}
-          allowCancel={!config.boardMode}
-          onCancel={() => dispatch({ type: 'CANCEL_CHAKRA' })}
-          onEndWithoutWinner={handleConfirmChakraEnd}
-          onConfirmEnd={handleConfirmChakraEnd}
-        />
-      </SafeAreaView>
-    )
-  }
 
   const shared = (
     <>
@@ -211,6 +199,7 @@ export default function GameScreen() {
           teams={teams}
           positions={state.boardPositions}
           activeTeamIndex={activeTeamIndex}
+          turnActive={currentTurn !== null}
         />
       ) : (
         <TeamScoreBar
@@ -251,13 +240,57 @@ export default function GameScreen() {
       {finalRound && (
         <View style={styles.finalBanner}>
           <Text style={styles.finalBannerText} numberOfLines={1} adjustsFontSizeToFit>
-            🏁 FINAL ROUND — {finalTriggerName} hit the target · {finalRound.turnsLeft}{' '}
+            🏁 FINAL ROUND: {finalTriggerName} hit the target · {finalRound.turnsLeft}{' '}
             {finalRound.turnsLeft === 1 ? 'turn' : 'turns'} left
           </Text>
         </View>
       )}
     </View>
   )
+
+  // ── Phase: Chakra round ───────────────────────────────────────────────
+  if (state.phase === 'chakra' && state.chakraState) {
+    // Board landings: show the board (walk animation plays) and wait for the
+    // player to step into the round themselves.
+    if (config.boardMode && !chakraEntered) {
+      return (
+        <SafeAreaView style={styles.container}>
+          {header}
+          <View style={styles.interstitial}>
+            <Chakra size={56} bgColor={CREAM} />
+            <Text style={styles.landedText}>Landed on a Chakra space!</Text>
+            <Text style={styles.interstitialSub}>
+              One describer, every team guesses. First to get it wins.
+            </Text>
+          </View>
+          <View style={styles.bottomSlot}>
+            <Pressable
+              onPress={() => setChakraEntered(true)}
+              style={({ pressed }) => [styles.primaryBtn, pressed && styles.btnPressed]}
+            >
+              <Text style={styles.primaryBtnText}>Start Chakra Round ☸</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      )
+    }
+    return (
+      <SafeAreaView style={styles.container}>
+        <ChakraRound
+          chakraState={state.chakraState}
+          teams={teams}
+          reward={config.chakraReward}
+          primaryLanguage={language}
+          onSelectCard={handleSelectChakraCard}
+          onTeamWon={handleChakraWinner}
+          allowCancel={!config.boardMode}
+          onCancel={() => dispatch({ type: 'CANCEL_CHAKRA' })}
+          onEndWithoutWinner={handleConfirmChakraEnd}
+          onConfirmEnd={handleConfirmChakraEnd}
+        />
+      </SafeAreaView>
+    )
+  }
 
   // ── Phase: between turns (interstitial splash) ────────────────────────
   if (!currentTurn) {
@@ -270,7 +303,7 @@ export default function GameScreen() {
             {isBonusTurn ? '☸ Chakra Bonus Round' : 'Next up'}
           </Text>
           {/* Team name in the team's own card-row band — springs in on handoff */}
-          <SpringIn key={activeTeam.id}>
+          <SpringIn key={activeTeam.id} stretch>
             <View style={[styles.teamBand, { backgroundColor: activeColour }]}>
               <Text style={styles.teamBandText} numberOfLines={1} adjustsFontSizeToFit>
                 {activeTeam.name}
@@ -279,7 +312,7 @@ export default function GameScreen() {
           </SpringIn>
           <Text style={styles.interstitialSub}>
             {isBonusTurn
-              ? 'You earned an extra round — make it count!'
+              ? 'You earned an extra round, make it count!'
               : 'Pass the phone to your team'}
           </Text>
         </View>
@@ -316,8 +349,10 @@ export default function GameScreen() {
     ? Infinity
     : config.maxActiveCards - playableCount
   // Applies in both modes: board turns arrive with the space's category
-  // pre-set; a ☸-space turn arrives with none and needs a free pick.
-  const needsCategory = !isBonusTurn && phase === 'waiting' && selectedCategory === null
+  // pre-set; ☸-words turns need none at all.
+  const chakraWordsTurn = currentTurn.chakraWords === true
+  const needsCategory =
+    !chakraWordsTurn && phase === 'waiting' && selectedCategory === null
 
   // ── Phase: active turn ────────────────────────────────────────────────
   return (
@@ -352,8 +387,9 @@ export default function GameScreen() {
         <LanguageToggle language={language} onChange={setLang} compact />
       </View>
 
-      {/* Target reached — the win is in hand, finish the turn */}
-      {config.targetScore !== undefined &&
+      {/* Target reached — no-board only; the board wins at FINISH */}
+      {!config.boardMode &&
+        config.targetScore !== undefined &&
         activeTeam.score >= config.targetScore &&
         !finalRound && <TargetReachedBanner />}
 
@@ -368,6 +404,13 @@ export default function GameScreen() {
             <Text style={styles.lockedCategoryText}>{selectedCategory}</Text>
           </View>
         )}
+        {/* ☸-words indicator for turns played from a chakra space */}
+        {chakraWordsTurn && !isBonusTurn && (
+          <View style={styles.chakraWordsChip}>
+            <Chakra size={18} bgColor="#FFFFFF" />
+            <Text style={styles.chakraWordsChipText}>Chakra words: describe the ☸ word</Text>
+          </View>
+        )}
 
         <CardStack
           cards={activeCards}
@@ -377,7 +420,7 @@ export default function GameScreen() {
           voidedIds={voidedIds}
           skipsRemaining={skipsRemaining}
           needsCategory={needsCategory}
-          chakraWords={isBonusTurn}
+          chakraWords={chakraWordsTurn}
           primaryLanguage={language}
           onReveal={handleReveal}
           onCorrect={handleCorrect}
@@ -387,9 +430,8 @@ export default function GameScreen() {
       </ScrollView>
 
       {/* Category bar — below the card, above the timer. Hidden when the
-          category is dictated (board space) or irrelevant (bonus turns);
-          shown for free choice, incl. declined ☸-space turns in board mode. */}
-      {!isBonusTurn && !(config.boardMode && currentTurn.categoryLocked) && (
+          category is dictated (board space) or when the turn plays ☸ words. */}
+      {!chakraWordsTurn && !(config.boardMode && currentTurn.categoryLocked) && (
         <CategoryBar
           selectedCategory={selectedCategory}
           onSelect={handleSelectCategory}
@@ -506,7 +548,7 @@ function CorrectionsModal({
 // handoff band and the End Turn button replacing the timer. Re-keying the
 // component replays it.
 
-function SpringIn({ children }: { children: React.ReactNode }) {
+function SpringIn({ children, stretch = false }: { children: React.ReactNode; stretch?: boolean }) {
   const anim = useRef(new Animated.Value(0)).current
   useEffect(() => {
     Animated.spring(anim, {
@@ -520,6 +562,7 @@ function SpringIn({ children }: { children: React.ReactNode }) {
   return (
     <Animated.View
       style={{
+        alignSelf: stretch ? 'stretch' : undefined,
         opacity: anim,
         transform: [
           { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) },
@@ -558,7 +601,7 @@ function TargetReachedBanner() {
         },
       ]}
     >
-      <Text style={styles.targetBannerText}>🎯 TARGET REACHED — finish the turn!</Text>
+      <Text style={styles.targetBannerText}>🎯 TARGET REACHED: finish the turn!</Text>
     </Animated.View>
   )
 }
@@ -688,6 +731,13 @@ const styles = StyleSheet.create({
     color: '#000000',
     lineHeight: 52,
   },
+  landedText: {
+    fontFamily: 'BalooChettan2_700Bold',
+    fontSize: 26,
+    color: INK,
+    textAlign: 'center',
+    lineHeight: 36,
+  },
   interstitialSub: {
     fontFamily: 'Quicksand_700Bold',
     fontSize: 15,
@@ -793,6 +843,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     alignSelf: 'flex-start',
+  },
+  chakraWordsChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 2.5,
+    borderColor: '#000000',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    alignSelf: 'flex-start',
+  },
+  chakraWordsChipText: {
+    fontFamily: 'Quicksand_700Bold',
+    fontSize: 13,
+    color: INK,
   },
   lockedCategoryText: {
     fontFamily: 'Quicksand_700Bold',

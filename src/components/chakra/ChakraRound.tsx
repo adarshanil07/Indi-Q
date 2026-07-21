@@ -77,7 +77,7 @@ export function ChakraRound({
       {phase === 'selecting' && (
         <>
           <Text style={styles.subtitle}>
-            Pick a card — you will describe its Chakra word while every team guesses!
+            Pick a card. You will describe its Chakra word while every team guesses!
           </Text>
           <ScrollView
             contentContainerStyle={styles.cardList}
@@ -104,7 +104,7 @@ export function ChakraRound({
                 onPress={onCancel}
                 style={({ pressed }) => [styles.cancelBtn, pressed && styles.pressed]}
               >
-                <Text style={styles.cancelBtnText}>← Cancel — back to normal turn</Text>
+                <Text style={styles.cancelBtnText}>← Cancel, back to normal turn</Text>
               </Pressable>
             )}
           </ScrollView>
@@ -148,7 +148,7 @@ export function ChakraRound({
             onPress={onEndWithoutWinner}
             style={({ pressed }) => [styles.noWinnerBtn, pressed && styles.pressed]}
           >
-            <Text style={styles.noWinnerText}>Nobody guessed it — end the round</Text>
+            <Text style={styles.noWinnerText}>Nobody guessed it, end the round</Text>
           </Pressable>
         </>
       )}
