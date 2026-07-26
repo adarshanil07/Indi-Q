@@ -9,8 +9,20 @@
 
 import type { StyleProp, ViewStyle } from 'react-native'
 
-export function initialiseAds(): void {
+export function useAdsReady(): boolean {
+  return false
+}
+
+export function usePrivacyOptionsRequired(): boolean {
+  return false
+}
+
+export async function initialiseAds(): Promise<void> {
   // No ads on web.
+}
+
+export async function showPrivacyOptions(): Promise<void> {
+  // No consent form on web.
 }
 
 export function AdBanner(_props: { style?: StyleProp<ViewStyle> }) {

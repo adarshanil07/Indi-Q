@@ -49,6 +49,9 @@ jest.mock('expo-splash-screen', () => ({
 // free of ad concerns — AdBanner renders nothing and the interstitial is inert.
 jest.mock('@/ads', () => ({
   initialiseAds: jest.fn(),
+  showPrivacyOptions: jest.fn(),
+  useAdsReady: () => false,
+  usePrivacyOptionsRequired: () => false,
   AdBanner: () => null,
   useGameEndInterstitial: () => ({ show: jest.fn() }),
 }))
