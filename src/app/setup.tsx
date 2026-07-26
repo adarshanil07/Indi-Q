@@ -29,6 +29,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Slider from '@react-native-community/slider'
 import { router } from 'expo-router'
 import { useStartGame } from '@/store/GameContext'
+import { AdBanner } from '@/ads'
 import { Chakra } from '@/components/card/Chakra'
 import { CATEGORY_COLOURS } from '@/constants/categories'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
@@ -151,6 +152,10 @@ export default function SetupScreen() {
             </TouchableOpacity>
             <Text style={styles.title}>Game Setup</Text>
           </View>
+
+          {/* Scrolls with the form, keeping it well clear of Start Game at the
+              bottom of the page. */}
+          <AdBanner />
 
           {/* 1 · Teams (yellow) */}
           <SectionCard colour={CATEGORY_COLOURS.People} title="Teams">
