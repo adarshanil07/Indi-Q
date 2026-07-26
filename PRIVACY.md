@@ -1,5 +1,9 @@
 # Privacy Policy for Indi-Q
 
+> This policy is published at
+> **https://adarshanil07.github.io/Indiq.privacypolicy/privacy.html** —
+> use that URL in store listings. This file is the source copy.
+
 **Last updated: 26 July 2026**
 
 Indi-Q ("the app", "we", "us") is a party word-guessing game published by
@@ -118,6 +122,6 @@ store listing.
 
 Questions about this policy or your data:
 
-**[ADD YOUR CONTACT EMAIL HERE]**
+**adhy.anil2007@gmail.com**
 
 EnJoy Games
