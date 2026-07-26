@@ -45,10 +45,37 @@ import { isUnlimitedSkips } from '@/constants/gameRules'
 import { teamColourAt } from '@/constants/teams'
 import { loadCardLanguage, saveCardLanguage, type CardLanguage } from '@/utils/prefs'
 import type { Card, Category, Team } from '@/types/game'
+import Svg, { Path } from 'react-native-svg'
 
 const CREAM = BRAND_COLOURS.cream
 const INK = BRAND_COLOURS.ink
 const HINT = BRAND_COLOURS.hint
+
+/**
+ * "Take back" arrow, drawn as a vector rather than the ↩ character: the
+ * U+21A9 glyph is missing from the bundled fonts and renders blank on
+ * Android, so the correction controls need a real shape.
+ */
+function UndoIcon({ size = 20, color }: { size?: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9 14 L4 9 L9 4"
+        stroke={color}
+        strokeWidth={2.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M4 9 H13.5 a6 6 0 0 1 6 6 V17"
+        stroke={color}
+        strokeWidth={2.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
 
 /** Which destructive action is awaiting confirmation. */
 type PendingConfirm = 'undo' | 'end' | 'restart' | null
@@ -379,7 +406,10 @@ export default function GameScreen() {
               onPress={() => setShowCorrections(true)}
               style={({ pressed }) => [styles.correctPill, pressed && styles.btnPressed]}
             >
-              <Text style={styles.correctCount}>+{correctIds.length} ↩</Text>
+              <View style={styles.correctPillInner}>
+                <Text style={styles.correctCount}>+{correctIds.length}</Text>
+                <UndoIcon size={15} color={CATEGORY_COLOURS.Nature} />
+              </View>
             </Pressable>
           </Pop>
         )}
@@ -459,7 +489,7 @@ export default function GameScreen() {
         )}
       </View>
 
-      {/* This turn's corrects — tap ↩ to reverse a mis-tapped Correct */}
+      {/* This turn's corrects — tap a word's undo arrow to reverse a mis-tapped Correct */}
       <CorrectionsModal
         visible={showCorrections}
         entries={state.completedWords.filter(
@@ -498,7 +528,7 @@ function CorrectionsModal({
       <View style={modalStyles.backdrop}>
         <View style={modalStyles.sheet}>
           <Text style={modalStyles.title}>This Turn's Words</Text>
-          <Text style={modalStyles.subtitle}>Tap ↩ to take back a mis-tapped Correct</Text>
+          <Text style={modalStyles.subtitle}>Tap a word's arrow to take back a mis-tapped Correct</Text>
 
           {entries.length === 0 ? (
             <Text style={correctionStyles.empty}>No words left this turn.</Text>
@@ -525,7 +555,7 @@ function CorrectionsModal({
                       pressed && styles.btnPressed,
                     ]}
                   >
-                    <Text style={correctionStyles.removeBtnText}>↩</Text>
+                    <UndoIcon size={20} color={CATEGORY_COLOURS.Random} />
                   </Pressable>
                 </View>
               ))
@@ -822,6 +852,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 2,
   },
+  correctPillInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   correctCount: {
     fontFamily: 'BalooChettan2_700Bold',
     fontSize: 18,
@@ -1000,11 +1035,6 @@ const correctionStyles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  removeBtnText: {
-    fontSize: 20,
-    color: CATEGORY_COLOURS.Random,
-    fontWeight: '900',
   },
 })
 
