@@ -11,6 +11,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { SvgXml } from 'react-native-svg'
+import { AdBanner } from '@/ads'
 import { Chakra } from '@/components/card/Chakra'
 import { HowToPlayCard } from '@/components/card/HowToPlayCard'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
@@ -39,6 +40,7 @@ export default function HowToPlayScreen() {
         </TouchableOpacity>
         <Text style={styles.title}>How to Play</Text>
       </View>
+      <AdBanner />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* The rules back of the physical card, rebuilt from the vectorized assets */}
         <HowToPlayCard />

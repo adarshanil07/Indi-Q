@@ -9,6 +9,7 @@ import { useFonts, Quicksand_500Medium, Quicksand_700Bold } from '@expo-google-f
 import * as SplashScreen from 'expo-splash-screen'
 import { GameProvider } from '@/store/GameContext'
 import { IntroSequence } from '@/components/intro/IntroSequence'
+import { initialiseAds } from '@/ads'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -27,6 +28,12 @@ export default function RootLayout() {
   // start (fresh process launch) — backgrounding the app does not replay it.
   // Tapping the intro skips straight to Home.
   const [showIntro, setShowIntro] = useState(true)
+
+  // Kick off the ads SDK once per launch, off the critical path — the intro
+  // plays regardless of whether initialisation succeeds.
+  useEffect(() => {
+    initialiseAds()
+  }, [])
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

@@ -27,6 +27,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
+import { AdBanner } from '@/ads'
 import { GameCard } from '@/components/card/GameCard'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
@@ -183,6 +184,12 @@ export default function JustCardsScreen() {
           <Text style={styles.counterOf}> / {deck.length}</Text>
         </Text>
       </View>
+
+      {/* Banner sits under the top bar, deliberately far from the nav tiles at
+          the bottom — an ad beneath a repeatedly-tapped control invites
+          accidental clicks, which is both bad for players and an AdMob
+          policy risk. */}
+      <AdBanner />
 
       {/* Card area */}
       <View style={styles.cardArea} onLayout={onAreaLayout}>

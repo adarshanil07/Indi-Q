@@ -43,3 +43,12 @@ jest.mock('expo-splash-screen', () => ({
   preventAutoHideAsync: jest.fn(),
   hideAsync: jest.fn(),
 }))
+
+// The Google Mobile Ads SDK is native-only. Screens import the app's own
+// wrapper rather than the SDK, so mocking the wrapper keeps every screen test
+// free of ad concerns — AdBanner renders nothing and the interstitial is inert.
+jest.mock('@/ads', () => ({
+  initialiseAds: jest.fn(),
+  AdBanner: () => null,
+  useGameEndInterstitial: () => ({ show: jest.fn() }),
+}))
