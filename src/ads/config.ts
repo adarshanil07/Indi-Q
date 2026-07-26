@@ -13,23 +13,33 @@
 export const ADS_ENABLED = true
 
 /**
- * Real AdMob unit IDs, filled in from the AdMob console. Left blank until the
- * account exists; while they are blank the app serves Google's test ads on
- * every build (see USE_TEST_ADS).
+ * Real AdMob unit IDs from the AdMob console. A blank entry means that
+ * platform has no unit yet and transparently falls back to a test ad, so a
+ * half-configured platform can never request a live ad or render nothing.
  */
 export const PROD_AD_UNIT_IDS = {
-  banner: { android: '', ios: '' },
-  interstitial: { android: '', ios: '' },
+  banner: {
+    android: 'ca-app-pub-9280199166759720/6398250326',
+    ios: '', // No iOS app in AdMob yet.
+  },
+  interstitial: {
+    android: 'ca-app-pub-9280199166759720/4920562839',
+    ios: '', // No iOS app in AdMob yet.
+  },
 } as const
 
 /**
- * Test ads are used unless this is a production build AND real unit IDs have
- * been supplied. This is a safety interlock, not a convenience: tapping a LIVE
- * ad in your own app is grounds for a permanent AdMob ban, so development
- * builds must never be able to request one.
+ * Live ads are opt-in per build profile rather than merely "not development".
+ *
+ * Only eas.json's `production` profile sets EXPO_PUBLIC_USE_LIVE_ADS, so both
+ * development AND internal `preview` builds stay on test ads. That distinction
+ * matters: preview builds are the ones handed round for testing, and tapping a
+ * LIVE ad in your own app is grounds for a permanent AdMob ban. Gating on
+ * __DEV__ alone would have left preview builds serving real ads.
  */
-export const USE_TEST_ADS =
-  __DEV__ || PROD_AD_UNIT_IDS.banner.android === '' || PROD_AD_UNIT_IDS.interstitial.android === ''
+const LIVE_ADS_REQUESTED = process.env.EXPO_PUBLIC_USE_LIVE_ADS === 'true'
+
+export const USE_TEST_ADS = __DEV__ || !LIVE_ADS_REQUESTED
 
 /**
  * Floor on the gap between two interstitials. The game shows one at the end of

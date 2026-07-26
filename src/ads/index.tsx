@@ -23,13 +23,17 @@ import {
 
 type UnitKind = 'banner' | 'interstitial'
 
-/** Resolve the unit ID for this platform, forcing test ads unless truly live. */
+/**
+ * Resolve the unit ID for this platform. Falls back to a test unit whenever
+ * live ads have not been explicitly requested, or when this platform has no
+ * real unit configured yet — so an unconfigured platform degrades to test ads
+ * rather than requesting a live ad or rendering an empty slot.
+ */
 function unitId(kind: UnitKind): string {
-  if (USE_TEST_ADS) {
-    return kind === 'banner' ? TestIds.ADAPTIVE_BANNER : TestIds.INTERSTITIAL
-  }
+  const testUnit = kind === 'banner' ? TestIds.ADAPTIVE_BANNER : TestIds.INTERSTITIAL
+  if (USE_TEST_ADS) return testUnit
   const ids = PROD_AD_UNIT_IDS[kind]
-  return Platform.OS === 'ios' ? ids.ios : ids.android
+  return (Platform.OS === 'ios' ? ids.ios : ids.android) || testUnit
 }
 
 /**
