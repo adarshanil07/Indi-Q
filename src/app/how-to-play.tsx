@@ -40,7 +40,7 @@ export default function HowToPlayScreen() {
         </TouchableOpacity>
         <Text style={styles.title}>How to Play</Text>
       </View>
-      <AdBanner />
+      <AdBanner style={styles.banner} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* The rules back of the physical card, rebuilt from the vectorized assets */}
         <HowToPlayCard />
@@ -97,6 +97,11 @@ const styles = StyleSheet.create({
     fontFamily: 'BalooChettan2_700Bold',
     fontSize: 34,
     color: '#FFFFFF',
+  },
+  banner: {
+    // Breathing room so the ad reads as separate from the rules card below it,
+    // rather than looking like part of the deck artwork.
+    marginBottom: SPACING.md,
   },
   scroll: {
     gap: SPACING.md,
