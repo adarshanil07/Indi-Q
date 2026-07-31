@@ -26,7 +26,7 @@ import {
   type LayoutChangeEvent,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
+import { router, Stack } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import { AdBanner } from '@/ads'
 import { GameCard } from '@/components/card/GameCard'
@@ -172,6 +172,10 @@ export default function JustCardsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* The card swipe spans the whole screen, so iOS's swipe-to-go-back
+          gesture fires on the same drag and pops the screen mid-deal. Only
+          this screen disables it; the Back button above remains the way out. */}
+      <Stack.Screen options={{ gestureEnabled: false }} />
       {/* Top bar: Back · language toggle · counter */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>

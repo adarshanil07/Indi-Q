@@ -35,7 +35,9 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
     back: jest.fn(),
   },
-  Stack: () => null,
+  // Stack.Screen is used to set per-screen navigation options (e.g. disabling
+  // the iOS back gesture), so the mock needs the static too, not just Stack.
+  Stack: Object.assign(() => null, { Screen: () => null }),
 }))
 
 // Splash screen is native-only.
