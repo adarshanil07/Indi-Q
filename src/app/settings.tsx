@@ -44,8 +44,8 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLOURS.background, paddingHorizontal: SPACING.xl },
   header: { paddingTop: SPACING.lg, marginBottom: SPACING.lg, gap: SPACING.sm },
-  back: { fontSize: FONT_SIZE.md, color: COLOURS.textSecondary },
-  title: { fontSize: FONT_SIZE.xl, fontWeight: '800', color: COLOURS.textPrimary },
+  back: { fontFamily: 'Quicksand_700Bold', fontSize: FONT_SIZE.md, color: COLOURS.textSecondary },
+  title: { fontFamily: 'BalooChettan2_700Bold', fontSize: FONT_SIZE.xl, color: COLOURS.textPrimary },
   row: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -54,9 +54,9 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     gap: SPACING.xs,
   },
-  rowLabel: { fontSize: FONT_SIZE.md, fontWeight: '700', color: COLOURS.textPrimary },
-  rowHint: { fontSize: FONT_SIZE.sm, color: COLOURS.textSecondary },
+  rowLabel: { fontFamily: 'Quicksand_700Bold', fontSize: FONT_SIZE.md, color: COLOURS.textPrimary },
+  rowHint: { fontFamily: 'Quicksand_500Medium', fontSize: FONT_SIZE.sm, color: COLOURS.textSecondary },
   placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: SPACING.sm },
-  placeholderText: { fontSize: FONT_SIZE.lg, fontWeight: '700', color: COLOURS.textPrimary },
-  placeholderSub: { fontSize: FONT_SIZE.md, color: COLOURS.textSecondary, textAlign: 'center' },
+  placeholderText: { fontFamily: 'Quicksand_700Bold', fontSize: FONT_SIZE.lg, color: COLOURS.textPrimary },
+  placeholderSub: { fontFamily: 'Quicksand_500Medium', fontSize: FONT_SIZE.md, color: COLOURS.textSecondary, textAlign: 'center' },
 })

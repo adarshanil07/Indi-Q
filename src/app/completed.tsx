@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   back: {
+    fontFamily: 'Quicksand_700Bold',
     fontSize: FONT_SIZE.md,
     color: BRAND_COLOURS.hint,
   },
@@ -155,13 +156,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: {
+    fontFamily: 'BalooChettan2_700Bold',
     fontSize: FONT_SIZE.xl,
-    fontWeight: '800',
     color: BRAND_COLOURS.ink,
   },
   count: {
+    fontFamily: 'BalooChettan2_700Bold',
     fontSize: FONT_SIZE.lg,
-    fontWeight: '800',
     color: BRAND_COLOURS.hint,
   },
   list: {
@@ -175,11 +176,12 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   emptyText: {
+    fontFamily: 'Quicksand_700Bold',
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
     color: BRAND_COLOURS.ink,
   },
   emptySub: {
+    fontFamily: 'Quicksand_500Medium',
     fontSize: FONT_SIZE.md,
     color: BRAND_COLOURS.hint,
   },
@@ -200,9 +202,9 @@ const boxStyles = StyleSheet.create({
     gap: SPACING.sm,
   },
   category: {
+    fontFamily: 'Quicksand_700Bold',
     flex: 1,
     fontSize: FONT_SIZE.md,
-    fontWeight: '800',
     color: BRAND_COLOURS.ink,
   },
   teamChip: {
@@ -213,8 +215,8 @@ const boxStyles = StyleSheet.create({
     borderColor: '#000000',
   },
   team: {
+    fontFamily: 'Quicksand_700Bold',
     fontSize: FONT_SIZE.sm,
-    fontWeight: '700',
     color: BRAND_COLOURS.hint,
     maxWidth: 140,
   },

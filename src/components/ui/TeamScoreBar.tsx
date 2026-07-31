@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   target: {
+    fontFamily: 'Quicksand_500Medium',
     fontSize: 13,
     color: 'rgba(0,0,0,0.55)',
   },

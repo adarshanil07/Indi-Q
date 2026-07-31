@@ -27,6 +27,7 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
+import Svg, { Path } from 'react-native-svg'
 import { AdBanner } from '@/ads'
 import { GameCard } from '@/components/card/GameCard'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
@@ -211,10 +212,58 @@ export default function JustCardsScreen() {
 
       {/* Navigation tiles */}
       <View style={styles.nav}>
-        <NavTile arrow="←" disabled={isFirst} onPress={goPrev} />
-        <NavTile arrow={isLast ? '↺' : '→'} reshuffle={isLast} onPress={goNext} />
+        <NavTile direction="left" disabled={isFirst} onPress={goPrev} />
+        <NavTile direction="right" reshuffle={isLast} onPress={goNext} />
       </View>
     </SafeAreaView>
+  )
+}
+
+// ── Navigation glyphs ───────────────────────────────────────────────────────
+// Drawn as vectors rather than the ←/→/↺ characters. Those come from the
+// platform's system font — Roboto on Android, San Francisco on iOS and the
+// web — so their stroke weight, proportions and vertical centring all shifted
+// between platforms, and the heavy weight they were set in was synthesised
+// rather than real. Paths render identically everywhere.
+
+function ArrowIcon({
+  direction,
+  size = 26,
+  color,
+}: {
+  direction: 'left' | 'right'
+  size?: number
+  color: string
+}) {
+  // Both directions are drawn explicitly rather than rotating one with <G>:
+  // react-native-svg renders that rotation as an invalid DOM attribute on web.
+  const d = direction === 'left' ? 'M14.5 5 L7.5 12 L14.5 19' : 'M9.5 5 L16.5 12 L9.5 19'
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d={d} stroke={color} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  )
+}
+
+/** Reshuffle: a near-complete circle with an arrowhead, replacing ↺. */
+function ReshuffleIcon({ size = 26, color }: { size?: number; color: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M20 12 a8 8 0 1 1 -2.5 -5.8"
+        stroke={color}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M20 3.5 V7 h-3.5"
+        stroke={color}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
   )
 }
 
@@ -224,12 +273,12 @@ export default function JustCardsScreen() {
 // the arrow set inside it — a miniature card, not a generic icon button.
 
 function NavTile({
-  arrow,
+  direction,
   onPress,
   disabled = false,
   reshuffle = false,
 }: {
-  arrow: string
+  direction: 'left' | 'right'
   onPress: () => void
   disabled?: boolean
   reshuffle?: boolean
@@ -239,6 +288,8 @@ function NavTile({
     : reshuffle
       ? CATEGORY_COLOURS.Nature
       : CATEGORY_COLOURS.Movie
+
+  const arrowColour = disabled ? 'rgba(0,0,0,0.3)' : '#000000'
 
   return (
     <Pressable
@@ -251,7 +302,11 @@ function NavTile({
       ]}
     >
       <View style={[styles.miniStripe, { backgroundColor: stripeColour }]}>
-        <Text style={[styles.navArrow, disabled && styles.navArrowDisabled]}>{arrow}</Text>
+        {reshuffle ? (
+          <ReshuffleIcon color={arrowColour} />
+        ) : (
+          <ArrowIcon direction={direction} color={arrowColour} />
+        )}
       </View>
     </Pressable>
   )
@@ -342,14 +397,5 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  navArrow: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#000000',
-    lineHeight: 28,
-  },
-  navArrowDisabled: {
-    color: 'rgba(0,0,0,0.3)',
   },
 })

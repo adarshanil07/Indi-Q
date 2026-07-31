@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_COLOURS.ink,
   },
   text: {
+    fontFamily: 'BalooChettan2_700Bold',
     fontSize: 14,
     color: BRAND_COLOURS.hint,
     lineHeight: 18,

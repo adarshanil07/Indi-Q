@@ -290,8 +290,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   overlaySub: {
+    fontFamily: 'Quicksand_500Medium',
     fontSize: 13,
-    fontWeight: '500',
     color: 'rgba(255,255,255,0.65)',
     textAlign: 'center',
     paddingHorizontal: 32,
