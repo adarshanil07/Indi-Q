@@ -39,8 +39,13 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-9280199166759720~7467789411",
-          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
-          "userTrackingUsageDescription": "This identifier will be used to show you ads that are more relevant to you."
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Indi-Q uses this to show ads that are more relevant to you. You can still play the full game if you decline."
         }
       ]
     ],

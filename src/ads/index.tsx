@@ -19,6 +19,7 @@ import mobileAds, {
   TestIds,
   useInterstitialAd,
 } from 'react-native-google-mobile-ads'
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'
 import {
   ADS_ENABLED,
   INTERSTITIAL_MIN_INTERVAL_MS,
@@ -106,6 +107,14 @@ export async function initialiseAds(): Promise<void> {
     emit()
 
     if (!info.canRequestAds) return
+
+    // iOS only: ask for the IDFA after the UMP form, per Google's ordering.
+    // Declining is fine — it costs personalisation, not ads, so we carry on
+    // either way. The ads SDK writes the Info.plist string but never requests
+    // this itself, so it has to happen here.
+    if (Platform.OS === 'ios') {
+      await requestTrackingPermissionsAsync().catch(() => null)
+    }
 
     await mobileAds().initialize()
     adsReady = true
