@@ -5,6 +5,8 @@
 // only ever touched from ads/index.tsx.
 // =============================================================================
 
+import * as Updates from 'expo-updates'
+
 /**
  * Master switch for every ad in the app. A future "remove ads" purchase only
  * has to flip this (or the state that feeds it) — no screen imports the ad SDK
@@ -29,17 +31,24 @@ export const PROD_AD_UNIT_IDS = {
 } as const
 
 /**
- * Live ads are opt-in per build profile rather than merely "not development".
+ * Live ads are served only by production builds. Development and internal
+ * preview builds stay on test ads, because those are the ones handed round for
+ * testing and tapping a LIVE ad in your own app is grounds for a permanent
+ * AdMob ban. Gating on __DEV__ alone would leave preview builds serving real
+ * ads, since they are not development builds.
  *
- * Only eas.json's `production` profile sets EXPO_PUBLIC_USE_LIVE_ADS, so both
- * development AND internal `preview` builds stay on test ads. That distinction
- * matters: preview builds are the ones handed round for testing, and tapping a
- * LIVE ad in your own app is grounds for a permanent AdMob ban. Gating on
- * __DEV__ alone would have left preview builds serving real ads.
+ * The signal is the EAS channel rather than an EXPO_PUBLIC_ env var. That
+ * matters for over-the-air updates: env vars are inlined when a bundle is
+ * built, and `eas update` resolves them from server-side EAS variables rather
+ * than eas.json's build profiles. An update published without the variable set
+ * would therefore have flipped a live production app back to test ads and
+ * silently stopped it earning.
+ *
+ * Updates.channel is compiled into the native build instead, so it keeps
+ * reporting "production" no matter what JS bundle is loaded on top. A build
+ * with no channel (null) falls back to test ads, which is the safe default.
  */
-const LIVE_ADS_REQUESTED = process.env.EXPO_PUBLIC_USE_LIVE_ADS === 'true'
-
-export const USE_TEST_ADS = __DEV__ || !LIVE_ADS_REQUESTED
+export const USE_TEST_ADS = __DEV__ || Updates.channel !== 'production'
 
 /**
  * Floor on the gap between two interstitials. The game shows one at the end of
