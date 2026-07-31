@@ -20,11 +20,11 @@ export const ADS_ENABLED = true
 export const PROD_AD_UNIT_IDS = {
   banner: {
     android: 'ca-app-pub-9280199166759720/6398250326',
-    ios: '', // No iOS app in AdMob yet.
+    ios: 'ca-app-pub-9280199166759720/6686647059',
   },
   interstitial: {
     android: 'ca-app-pub-9280199166759720/4920562839',
-    ios: '', // No iOS app in AdMob yet.
+    ios: 'ca-app-pub-9280199166759720/4571885531',
   },
 } as const
 
