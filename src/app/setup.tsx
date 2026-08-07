@@ -33,7 +33,11 @@ import { AdBanner } from '@/ads'
 import { Chakra } from '@/components/card/Chakra'
 import { CATEGORY_COLOURS } from '@/constants/categories'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
-import { UNLIMITED_SKIPS, isUnlimitedSkips } from '@/constants/gameRules'
+import {
+  UNLIMITED_SKIPS,
+  isUnlimitedSkips,
+  maxActiveCardsForSkips,
+} from '@/constants/gameRules'
 import { TEAM_COLOURS } from '@/constants/teams'
 import { loadSavedSetup, saveSetup } from '@/utils/setupStorage'
 import type { ChakraReward } from '@/types/game'
@@ -48,7 +52,7 @@ const TIMER_STEP = 5
 const CHAKRA_REWARD_OPTIONS: readonly ChakraReward[] = [1, 2, 3, 'extra-round']
 const DEFAULT_TEAM_COUNT = 2
 const DEFAULT_TIMER = 60
-const DEFAULT_MAX_CARDS = 2
+const DEFAULT_SKIPS = 1
 
 function buildDefaultNames(count: number): string[] {
   return Array.from({ length: count }, (_, i) => `Team ${i + 1}`)
@@ -60,7 +64,7 @@ export default function SetupScreen() {
   const [teamCount, setTeamCount] = useState(DEFAULT_TEAM_COUNT)
   const [teamNames, setTeamNames] = useState<string[]>(buildDefaultNames(DEFAULT_TEAM_COUNT))
   const [timerDuration, setTimerDuration] = useState(DEFAULT_TIMER)
-  const [maxActiveCards, setMaxActiveCards] = useState(DEFAULT_MAX_CARDS)
+  const [skipsAllowed, setSkipsAllowed] = useState(DEFAULT_SKIPS)
   const [boardMode, setBoardMode] = useState(false)
   const [targetScoreText, setTargetScoreText] = useState('')
   const [chakraCardCount, setChakraCardCount] = useState(3)
@@ -74,7 +78,7 @@ export default function SetupScreen() {
       setTeamCount(saved.teamCount)
       setTeamNames(saved.teamNames)
       setTimerDuration(saved.timerDuration)
-      setMaxActiveCards(saved.maxActiveCards)
+      setSkipsAllowed(saved.skipsAllowed)
       setBoardMode(saved.boardMode)
       setTargetScoreText(saved.targetScoreText)
       setChakraCardCount(saved.chakraCardCount)
@@ -119,7 +123,7 @@ export default function SetupScreen() {
       teamCount,
       teamNames,
       timerDuration,
-      maxActiveCards,
+      skipsAllowed,
       boardMode,
       targetScoreText,
       chakraCardCount,
@@ -129,7 +133,7 @@ export default function SetupScreen() {
     startGame({
       teamNames: names,
       timerDuration,
-      maxActiveCards,
+      maxActiveCards: maxActiveCardsForSkips(skipsAllowed),
       chakraCardCount,
       chakraReward,
       boardMode,
@@ -215,15 +219,15 @@ export default function SetupScreen() {
           <SectionCard colour={CATEGORY_COLOURS.Object} title="Skips">
             <TilePicker
               options={[1, 2, 3, UNLIMITED_SKIPS]}
-              value={maxActiveCards}
-              onSelect={setMaxActiveCards}
+              value={skipsAllowed}
+              onSelect={setSkipsAllowed}
               colour={CATEGORY_COLOURS.Object}
               formatLabel={n => (isUnlimitedSkips(n) ? '∞' : `${n}`)}
             />
             <Text style={styles.hint}>
-              {isUnlimitedSkips(maxActiveCards)
+              {isUnlimitedSkips(skipsAllowed)
                 ? 'Unlimited: skip as often as you like; every skipped card stays on screen.'
-                : 'Maximum cards on screen at once. Skipping draws a new card alongside the current one.'}
+                : `How many times a team can skip per turn. Each skipped card stays on screen alongside the new one, so up to ${maxActiveCardsForSkips(skipsAllowed)} cards can be visible at once.`}
             </Text>
           </SectionCard>
 
