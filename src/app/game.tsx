@@ -332,7 +332,12 @@ export default function GameScreen() {
           {/* Team name in the team's own card-row band — springs in on handoff */}
           <SpringIn key={activeTeam.id} stretch>
             <View style={[styles.teamBand, { backgroundColor: activeColour }]}>
-              <Text style={styles.teamBandText} numberOfLines={1} adjustsFontSizeToFit>
+              <Text
+                style={styles.teamBandText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+              >
                 {activeTeam.name}
               </Text>
             </View>
@@ -759,7 +764,9 @@ const styles = StyleSheet.create({
     fontFamily: 'BalooChettan2_700Bold',
     fontSize: 40,
     color: '#000000',
-    lineHeight: 52,
+    // Deliberately no explicit line height. iOS shrinks the glyphs to satisfy
+    // adjustsFontSizeToFit but keeps a fixed line height, which collapses the
+    // text to an unreadable speck.
   },
   landedText: {
     fontFamily: 'BalooChettan2_700Bold',

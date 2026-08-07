@@ -109,7 +109,12 @@ export default function ResultsScreen() {
                 { backgroundColor: teamColourFor(teams, winners[0].id) },
               ]}
             >
-              <Text style={styles.winnerBandText} numberOfLines={1} adjustsFontSizeToFit>
+              <Text
+                style={styles.winnerBandText}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+              >
                 {winners[0].name}
               </Text>
             </View>
@@ -337,7 +342,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BalooChettan2_700Bold',
     fontSize: 36,
     color: '#000000',
-    lineHeight: 48,
+    // Deliberately no explicit line height — see teamBandText in game.tsx.
   },
   heroScore: {
     fontFamily: 'BalooChettan2_700Bold',

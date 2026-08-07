@@ -92,7 +92,13 @@ export default function SetupScreen() {
   }
 
   const handleStart = () => {
-    const names = teamNames.map(n => n.trim()).filter(Boolean)
+    // Only the teams actually being played: teamNames can hold stale entries
+    // from a previously larger team count.
+    const names = teamNames.slice(0, teamCount).map(n => n.trim())
+    if (names.some(n => n.length === 0)) {
+      setValidationError('Please give every team a name.')
+      return
+    }
     if (names.length < 2) {
       setValidationError('Please name at least 2 teams.')
       return

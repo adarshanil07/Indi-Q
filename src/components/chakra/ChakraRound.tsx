@@ -158,7 +158,12 @@ export function ChakraRound({
         <WinnerSpring style={styles.resultBlock}>
           <Text style={styles.resultLabel}>Chakra round won by</Text>
           <View style={[styles.winnerBand, { backgroundColor: teamColourAt(winnerIdx) }]}>
-            <Text style={styles.winnerBandText} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={styles.winnerBandText}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.5}
+            >
               {winner.name}
             </Text>
           </View>
@@ -359,7 +364,7 @@ const styles = StyleSheet.create({
     fontFamily: 'BalooChettan2_700Bold',
     fontSize: 36,
     color: '#000000',
-    lineHeight: 48,
+    // Deliberately no explicit line height — see teamBandText in game.tsx.
   },
   resultReward: {
     fontFamily: 'Quicksand_700Bold',

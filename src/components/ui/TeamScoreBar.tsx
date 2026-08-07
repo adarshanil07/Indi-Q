@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   teamName: {
     flex: 1,
     fontFamily: 'Quicksand_700Bold',
-    fontSize: 13,
+    fontSize: 15,
     color: '#000000',
   },
   score: {
