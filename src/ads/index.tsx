@@ -49,6 +49,21 @@ function subscribe(listener: () => void) {
   }
 }
 
+/**
+ * Explain why no ad will appear. Ads failing closed is intentional, but it is
+ * indistinguishable from a network problem or an unfilled ad request, which
+ * makes "no ads on the tester build" nearly impossible to diagnose. Logged
+ * rather than surfaced, since players should never see this.
+ */
+function warnAdsDisabled(reason: string): void {
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[ads] disabled — ${reason}. Test ads: ${USE_TEST_ADS}. ` +
+      'If consent is the cause, publish a GDPR message under Privacy & ' +
+      'messaging in AdMob for this app.',
+  )
+}
+
 /** True once consent allows ads AND the SDK has initialised. */
 export function useAdsReady(): boolean {
   return useSyncExternalStore(
@@ -106,7 +121,18 @@ export async function initialiseAds(): Promise<void> {
       AdsConsentPrivacyOptionsRequirementStatus.REQUIRED
     emit()
 
-    if (!info.canRequestAds) return
+    if (!info.canRequestAds) {
+      // Most often this means no GDPR message has been published under
+      // Privacy & messaging in AdMob, so a regulated user cannot be asked for
+      // consent and therefore no ad may be requested. Silence here is the one
+      // failure mode that looks identical to "ads just aren't filling", so say
+      // so rather than leaving nothing to go on.
+      warnAdsDisabled(
+        `consent did not permit ads (status=${info.status}, ` +
+          `formAvailable=${info.isConsentFormAvailable})`,
+      )
+      return
+    }
 
     // iOS only: ask for the IDFA after the UMP form, per Google's ordering.
     // Declining is fine — it costs personalisation, not ads, so we carry on
@@ -119,8 +145,9 @@ export async function initialiseAds(): Promise<void> {
     await mobileAds().initialize()
     adsReady = true
     emit()
-  } catch {
+  } catch (error) {
     // Offline, or consent could not be resolved — play on without ads.
+    warnAdsDisabled(`initialisation threw: ${String(error)}`)
   }
 }
 

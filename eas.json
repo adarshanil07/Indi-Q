@@ -13,6 +13,13 @@
       "distribution": "internal",
       "channel": "preview"
     },
+    "beta": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "channel": "beta"
+    },
     "production": {
       "autoIncrement": true,
       "android": {
@@ -22,6 +29,7 @@
     }
   },
   "submit": {
+    "beta": {},
     "production": {}
   }
 }
