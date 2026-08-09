@@ -29,6 +29,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { router, Stack } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import { AdBanner } from '@/ads'
+import { feedback } from '@/feedback'
 import { GameCard } from '@/components/card/GameCard'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
@@ -117,7 +118,8 @@ export default function JustCardsScreen() {
     })
   }
 
-  const goNext = () =>
+  const goNext = () => {
+    feedback.tap()
     dealTo(1, () => {
       if (isLast) {
         setDeck(shuffled(ALL_CARDS))
@@ -126,9 +128,11 @@ export default function JustCardsScreen() {
         setIndex(i => i + 1)
       }
     })
+  }
 
   const goPrev = () => {
     if (isFirst) return
+    feedback.tap()
     dealTo(-1, () => setIndex(i => i - 1))
   }
 

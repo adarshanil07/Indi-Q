@@ -10,6 +10,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { GameProvider } from '@/store/GameContext'
 import { IntroSequence } from '@/components/intro/IntroSequence'
 import { initialiseAds } from '@/ads'
+import { initialiseFeedback } from '@/feedback'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
   // plays regardless of whether initialisation succeeds.
   useEffect(() => {
     initialiseAds()
+    initialiseFeedback()
   }, [])
 
   useEffect(() => {

@@ -49,6 +49,24 @@ jest.mock('expo-splash-screen', () => ({
 // The Google Mobile Ads SDK is native-only. Screens import the app's own
 // wrapper rather than the SDK, so mocking the wrapper keeps every screen test
 // free of ad concerns — AdBanner renders nothing and the interstitial is inert.
+// Haptics and audio are native-only; screens import the app's own wrapper, so
+// mocking that keeps every screen test free of feedback concerns.
+jest.mock('@/feedback', () => ({
+  initialiseFeedback: jest.fn(),
+  getFeedbackPrefs: () => ({ sound: true, haptics: true }),
+  setFeedbackPrefs: jest.fn(),
+  subscribeFeedbackPrefs: () => () => {},
+  feedback: {
+    tap: jest.fn(),
+    select: jest.fn(),
+    reveal: jest.fn(),
+    correct: jest.fn(),
+    skip: jest.fn(),
+    voided: jest.fn(),
+    win: jest.fn(),
+  },
+}))
+
 jest.mock('@/ads', () => ({
   initialiseAds: jest.fn(),
   showPrivacyOptions: jest.fn(),

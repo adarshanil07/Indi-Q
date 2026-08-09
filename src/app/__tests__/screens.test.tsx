@@ -10,6 +10,15 @@ import { GameProvider, useGame } from '@/store/GameContext'
 import { makeConfig, makeDeck } from '@/testUtils/factories'
 import type { GameConfig } from '@/types/game'
 import type { GameAction } from '@/store/gameActions'
+import { saveFeedbackPrefs } from '@/utils/prefs'
+
+// Persisting preferences is a storage side effect; assert the call, not the write.
+jest.mock('@/utils/prefs', () => ({
+  ...jest.requireActual('@/utils/prefs'),
+  saveFeedbackPrefs: jest.fn(),
+  loadCardLanguage: jest.fn().mockResolvedValue(null),
+  saveCardLanguage: jest.fn(),
+}))
 
 import HomeScreen from '../index'
 import SetupScreen from '../setup'
@@ -210,9 +219,27 @@ describe('HowToPlayScreen', () => {
 })
 
 describe('SettingsScreen', () => {
-  it('renders the placeholder', async () => {
+  it('renders the feedback, privacy and about sections', async () => {
     await render(<SettingsScreen />)
-    expect(screen.getByText('Settings coming soon')).toBeOnTheScreen()
+    expect(screen.getByText('Sound effects')).toBeOnTheScreen()
+    expect(screen.getByText('Vibration')).toBeOnTheScreen()
+    expect(screen.getByText('Privacy policy')).toBeOnTheScreen()
+    expect(screen.getByText('Version')).toBeOnTheScreen()
+  })
+
+  it('hides ad privacy choices where consent was never gathered', async () => {
+    // usePrivacyOptionsRequired is mocked false — non-EEA users have nothing
+    // to change, so the row must not appear.
+    await render(<SettingsScreen />)
+    expect(screen.queryByText('Ad privacy choices')).toBeNull()
+  })
+
+  it('persists a toggle change', async () => {
+    await render(<SettingsScreen />)
+    await fireEvent(screen.getAllByRole('switch')[0], 'valueChange', false)
+    expect(saveFeedbackPrefs).toHaveBeenCalledWith(
+      expect.objectContaining({ sound: false }),
+    )
   })
 })
 

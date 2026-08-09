@@ -53,7 +53,8 @@
         {
           "userTrackingPermission": "Indi-Q uses this to show ads that are more relevant to you. You can still play the full game if you decline."
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -39,6 +39,7 @@ import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { LanguageToggle } from '@/components/ui/LanguageToggle'
 import { Pop } from '@/components/ui/Pop'
 import { TeamScoreBar } from '@/components/ui/TeamScoreBar'
+import { feedback } from '@/feedback'
 import { CATEGORY_COLOURS } from '@/constants/categories'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
 import { isUnlimitedSkips } from '@/constants/gameRules'
@@ -145,21 +146,51 @@ export default function GameScreen() {
   // (bonus turns, or board turns started on a ☸ space).
   const handleReveal = () => {
     if (!state.currentTurn?.chakraWords && !state.currentTurn?.selectedCategory) return
+    feedback.reveal()
     dispatch({ type: 'REVEAL_CARD' })
   }
-  const handleSelectCategory = (cat: Category) => dispatch({ type: 'SELECT_CATEGORY', category: cat })
-  const handleCorrect = (cardId: string) => dispatch({ type: 'MARK_CORRECT', cardId })
-  const handleVoid = (cardId: string) => dispatch({ type: 'VOID_CARD', cardId })
-  const handleSkip = () => dispatch({ type: 'SKIP' })
-  const handleConfirmTurnEnd = () => dispatch({ type: 'CONFIRM_TURN_END' })
-  const handleStartTurn = () => dispatch({ type: 'START_TURN' })
+  const handleSelectCategory = (cat: Category) => {
+    feedback.select()
+    dispatch({ type: 'SELECT_CATEGORY', category: cat })
+  }
+  const handleCorrect = (cardId: string) => {
+    feedback.correct()
+    dispatch({ type: 'MARK_CORRECT', cardId })
+  }
+  const handleVoid = (cardId: string) => {
+    feedback.voided()
+    dispatch({ type: 'VOID_CARD', cardId })
+  }
+  const handleSkip = () => {
+    feedback.skip()
+    dispatch({ type: 'SKIP' })
+  }
+  const handleConfirmTurnEnd = () => {
+    feedback.tap()
+    dispatch({ type: 'CONFIRM_TURN_END' })
+  }
+  const handleStartTurn = () => {
+    feedback.tap()
+    dispatch({ type: 'START_TURN' })
+  }
 
   // Chakra round (Section 7)
-  const handleTriggerChakra = () => dispatch({ type: 'TRIGGER_CHAKRA' })
-  const handleSelectChakraCard = (card: Card) => dispatch({ type: 'SELECT_CHAKRA_CARD', card })
-  const handleChakraWinner = (winningTeamId: string) =>
+  const handleTriggerChakra = () => {
+    feedback.tap()
+    dispatch({ type: 'TRIGGER_CHAKRA' })
+  }
+  const handleSelectChakraCard = (card: Card) => {
+    feedback.select()
+    dispatch({ type: 'SELECT_CHAKRA_CARD', card })
+  }
+  const handleChakraWinner = (winningTeamId: string) => {
+    feedback.win()
     dispatch({ type: 'CHAKRA_CORRECT', winningTeamId })
-  const handleConfirmChakraEnd = () => dispatch({ type: 'CONFIRM_CHAKRA_END' })
+  }
+  const handleConfirmChakraEnd = () => {
+    feedback.tap()
+    dispatch({ type: 'CONFIRM_CHAKRA_END' })
+  }
 
   const runPendingConfirm = () => {
     if (pendingConfirm === 'undo') dispatch({ type: 'UNDO' })
@@ -504,6 +535,7 @@ export default function GameScreen() {
             w.teamId === currentTurn.teamId,
         )}
         onRemove={cardId => {
+          feedback.skip()
           dispatch({ type: 'UNDO_CORRECT', cardId })
         }}
         onClose={() => setShowCorrections(false)}

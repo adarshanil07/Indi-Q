@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { AdBanner, useGameEndInterstitial } from '@/ads'
+import { feedback } from '@/feedback'
 import { INTERSTITIAL_DELAY_MS } from '@/ads/config'
 import { useGame } from '@/store/GameContext'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
@@ -54,6 +55,11 @@ export default function ResultsScreen() {
       useNativeDriver: true,
     }).start()
   }, [heroIn])
+
+  // The game is over — celebrate before anything else happens.
+  useEffect(() => {
+    feedback.win()
+  }, [])
 
   // End-of-game interstitial. Held back until the winner has landed and the
   // confetti has had a moment — slamming an ad over the celebration is the

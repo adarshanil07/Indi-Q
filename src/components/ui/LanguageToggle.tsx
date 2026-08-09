@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { feedback } from '@/feedback'
 import { BRAND_COLOURS } from '@/constants/brandAssets'
 import type { CardLanguage } from '@/utils/prefs'
 
@@ -20,7 +21,10 @@ export function LanguageToggle({ language, onChange, compact = false }: Props) {
     <View style={styles.toggle}>
       <TouchableOpacity
         style={[styles.seg, compact && styles.segCompact, language === 'en' && styles.segActive]}
-        onPress={() => onChange('en')}
+        onPress={() => {
+          feedback.select()
+          onChange('en')
+        }}
         activeOpacity={0.8}
       >
         <Text
@@ -35,7 +39,10 @@ export function LanguageToggle({ language, onChange, compact = false }: Props) {
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.seg, compact && styles.segCompact, language === 'ml' && styles.segActive]}
-        onPress={() => onChange('ml')}
+        onPress={() => {
+          feedback.select()
+          onChange('ml')
+        }}
         activeOpacity={0.8}
       >
         <Text
