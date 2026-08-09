@@ -394,15 +394,19 @@ describe('chakra rounds', () => {
     expect(step(state, { type: 'TRIGGER_CHAKRA' })).toBe(state)
   })
 
-  it('CANCEL_CHAKRA returns the offered cards to the bottom of the deck', () => {
+  it('CANCEL_CHAKRA moves the offered cards to the discard, words unspent', () => {
+    // The describer saw the offered cards, so they count as recently seen and
+    // go to the back of the discard pile — but no word was spoken, so their
+    // usage stays untouched and every word remains fresh.
     const state = playActions(makeConfig({ chakraCardCount: 3 }), makeDeck(10), [
       { type: 'TRIGGER_CHAKRA' },
       { type: 'CANCEL_CHAKRA' },
     ])
     expect(state.phase).toBe('playing')
     expect(state.chakraState).toBeNull()
-    expect(state.deck).toHaveLength(10)
-    expect(state.deck.slice(-3).map(c => c.id)).toEqual(['c1', 'c2', 'c3'])
+    expect(state.deck).toHaveLength(7)
+    expect(state.discardPile.map(c => c.id)).toEqual(['c1', 'c2', 'c3'])
+    expect(state.cardUsage).toEqual({})
   })
 
   it('numeric reward: winner gains points and rotation advances', () => {
@@ -475,7 +479,7 @@ describe('chakra rounds', () => {
 })
 
 describe('deck cycling', () => {
-  it('refills the deck from the discard pile when a turn needs a card', () => {
+  it('draws from the discard pool once the deck is spent — no refill step', () => {
     // 2-card deck: turn 1 consumes c1 (scored → discard) and c2 (drawn).
     let state = playActions(makeConfig(), makeDeck(2), [
       { type: 'START_TURN' },
@@ -488,10 +492,11 @@ describe('deck cycling', () => {
     expect(state.deck).toHaveLength(0)
     expect(state.discardPile).toHaveLength(2)
 
-    // Turn 2 must refill from the discard to start at all.
+    // Turn 2 starts by pulling the least-recently-seen card straight from
+    // the discard pool; the pile shrinks by exactly that one card.
     state = step(state, { type: 'START_TURN' })
-    expect(state.currentTurn?.activeCards).toHaveLength(1)
-    expect(state.discardPile).toHaveLength(0)
+    expect(state.currentTurn?.activeCards.map(c => c.id)).toEqual(['c1'])
+    expect(state.discardPile.map(c => c.id)).toEqual(['c2'])
   })
 
   it('RESTART_TURN deals a fresh card, keeps points, and locks the category', () => {

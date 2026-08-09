@@ -1,14 +1,150 @@
 // =============================================================================
 // utils/deck.ts
-// Pure functions for managing the card deck and usage tracking.
+// Word-freshness card selection. Pure functions only: no side effects, no
+// React, no global state, so every behaviour is unit-testable.
 //
-// "Pure" means: no side effects, no React, no global state.
-// Every function takes inputs and returns outputs — nothing else.
-// This makes them trivially easy to unit test.
+// The model
+// ---------
+//   deck        cards never shown this game. It drains and is never refilled.
+//   discardPile cards that have been shown, in the order they finished being
+//               used — so the FRONT is the least-recently-seen card.
+//   cardUsage   which categories each card has spent. A word is "fresh" while
+//               its category is not recorded for that card.
+//
+// Every draw states a Need — a specific category, the card's own ☸ word, or
+// 'any' — and selection walks three tiers:
+//
+//   1. UNSEEN        front-most deck card whose needed word is fresh.
+//   2. SEEN, FRESH   front-most discard card whose needed word is fresh.
+//                    The same card can return, as long as the word for the
+//                    current need has not been used.
+//   3. EXHAUSTED     every candidate's needed word is spent: front-most
+//                    discard card — i.e. the least-recently-seen repeat.
+//                    Play never stops for lack of fresh words.
+//
+// Cards currently on screen are excluded via `excludeIds`; the linear deck
+// used to prevent on-screen duplicates for free, so pool-based selection has
+// to do it explicitly.
+//
+// Selection is deterministic (front-most, never random). All randomness lives
+// in the single shuffle when the game starts, which keeps games varied while
+// making every draw reproducible in tests.
 // =============================================================================
 
 import type { Card, Category, CardUsageMap } from '../types/game'
-import { CATEGORIES } from '../constants/categories'
+
+/** What the next card must provide. */
+export type Need =
+  | { kind: 'category'; category: Category }
+  | { kind: 'chakra' }
+  | { kind: 'any' }
+
+/** The word (category slot) a need consumes on a given card, if any. */
+function neededCategory(card: Card, need: Need): Category | null {
+  switch (need.kind) {
+    case 'category':
+      return need.category
+    case 'chakra':
+      return card.chakraCategory
+    case 'any':
+      return null
+  }
+}
+
+/** True while the card's word for this need has not been used. */
+export function isFreshFor(card: Card, need: Need, cardUsage: CardUsageMap): boolean {
+  const category = neededCategory(card, need)
+  if (category === null) return true
+  return !(cardUsage[card.id] ?? []).includes(category)
+}
+
+export interface TakeResult {
+  card: Card
+  /** False only when the tier-3 fallback served an already-used word. */
+  fresh: boolean
+  deck: Card[]
+  discardPile: Card[]
+}
+
+/**
+ * Select one card for a need, removing it from whichever pile held it.
+ * Returns null when every card is excluded (i.e. everything is on screen) —
+ * with a real deck that only happens in degenerate tests.
+ */
+export function takeCard(
+  deck: Card[],
+  discardPile: Card[],
+  cardUsage: CardUsageMap,
+  need: Need,
+  excludeIds: ReadonlySet<string> = new Set(),
+): TakeResult | null {
+  const allowed = (card: Card) => !excludeIds.has(card.id)
+
+  // Tier 1: unseen and fresh.
+  const fromDeck = deck.find(card => allowed(card) && isFreshFor(card, need, cardUsage))
+  if (fromDeck) {
+    return {
+      card: fromDeck,
+      fresh: true,
+      deck: deck.filter(c => c.id !== fromDeck.id),
+      discardPile,
+    }
+  }
+
+  // Tier 2: seen, but the needed word is still fresh. Front of the discard
+  // pile first, so the least-recently-seen eligible card returns.
+  const fromDiscard = discardPile.find(
+    card => allowed(card) && isFreshFor(card, need, cardUsage),
+  )
+  if (fromDiscard) {
+    return {
+      card: fromDiscard,
+      fresh: true,
+      deck,
+      discardPile: discardPile.filter(c => c.id !== fromDiscard.id),
+    }
+  }
+
+  // Tier 3: the need is exhausted — serve the oldest repeat rather than stop
+  // play. Unseen deck cards are always fresh, so exhaustion implies the deck
+  // holds no allowed cards either; still check it for completeness.
+  const fallback = discardPile.find(allowed) ?? deck.find(allowed)
+  if (!fallback) return null
+  return {
+    card: fallback,
+    fresh: false,
+    deck: deck.filter(c => c.id !== fallback.id),
+    discardPile: discardPile.filter(c => c.id !== fallback.id),
+  }
+}
+
+/**
+ * Select up to `count` cards for a need (the Chakra round's candidate hand).
+ * Fresh ☸ words fill the slots first; least-recently-seen repeats pad the
+ * rest, so the round always offers a full hand when enough cards exist.
+ */
+export function takeCards(
+  deck: Card[],
+  discardPile: Card[],
+  cardUsage: CardUsageMap,
+  need: Need,
+  count: number,
+  excludeIds: ReadonlySet<string> = new Set(),
+): { cards: Card[]; deck: Card[]; discardPile: Card[] } {
+  const cards: Card[] = []
+  let d = deck
+  let p = discardPile
+  const excluded = new Set(excludeIds)
+  for (let i = 0; i < count; i++) {
+    const taken = takeCard(d, p, cardUsage, need, excluded)
+    if (!taken) break
+    cards.push(taken.card)
+    excluded.add(taken.card.id)
+    d = taken.deck
+    p = taken.discardPile
+  }
+  return { cards, deck: d, discardPile: p }
+}
 
 /**
  * Fisher-Yates shuffle.
@@ -24,71 +160,8 @@ export function shuffle<T>(array: readonly T[]): T[] {
 }
 
 /**
- * Standard draw: removes the top card from the deck.
- * Returns [drawnCard, remainingDeck].
- *
- * Use this in no-board mode, where the category is chosen AFTER the card
- * is revealed — so we can't pre-filter by category at draw time.
- */
-export function drawCard(deck: Card[]): [Card, Card[]] {
-  if (deck.length === 0) {
-    throw new Error('drawCard: cannot draw from an empty deck.')
-  }
-  const [card, ...rest] = deck
-  return [card, rest]
-}
-
-/**
- * Smart draw: picks a card that still has a fresh word for the given category.
- * Used in board mode, where the category is known before the card is drawn.
- *
- * Algorithm:
- *   1. Find cards in the deck whose `category` has NOT been used yet
- *      (i.e. not in cardUsage[card.id]).
- *   2. If any found → pick one at random from that preferred set.
- *   3. If none found (every deck card has already used this category) →
- *      fall back to a random card from the full deck.
- *      The word will be a repeat, but it's the best available option.
- *
- * Returns [chosenCard, remainingDeck].
- */
-export function drawCardForCategory(
-  deck: Card[],
-  cardUsage: CardUsageMap,
-  category: Category,
-): [Card, Card[]] {
-  if (deck.length === 0) {
-    throw new Error('drawCardForCategory: cannot draw from an empty deck.')
-  }
-
-  const preferred = deck.filter(
-    card => !(cardUsage[card.id] ?? []).includes(category),
-  )
-
-  const pool = preferred.length > 0 ? preferred : deck
-  const chosen = pool[Math.floor(Math.random() * pool.length)]
-  const remaining = deck.filter(card => card.id !== chosen.id)
-
-  return [chosen, remaining]
-}
-
-/**
- * Draw n cards at once (used when starting Chakra Mode).
- * Standard draw — category is not known in advance.
- * Returns [drawnCards, remainingDeck].
- */
-export function drawCards(deck: Card[], n: number): [Card[], Card[]] {
-  if (deck.length < n) {
-    throw new Error(`drawCards: requested ${n} cards but deck only has ${deck.length}.`)
-  }
-  return [deck.slice(0, n), deck.slice(n)]
-}
-
-/**
  * Record that a category was played on a card.
  * Returns a new CardUsageMap — does not mutate the original.
- *
- * Call this at the end of every turn, once the category and card are confirmed.
  */
 export function recordCardUsage(
   usageMap: CardUsageMap,
@@ -99,35 +172,4 @@ export function recordCardUsage(
   // Avoid duplicates (e.g. if the same card is played twice in edge cases)
   if (existing.includes(category)) return usageMap
   return { ...usageMap, [cardId]: [...existing, category] }
-}
-
-/**
- * Refill the deck from the discard pile when the deck runs out.
- *
- * Also resets usage tracking for cards where all 6 categories have been played —
- * making them fully fresh for the next cycle. Cards with remaining unused
- * categories keep their usage record so smart draws still avoid repeats.
- *
- * Returns { deck, discardPile, cardUsage } — all three may change.
- */
-export function refillDeck(
-  discardPile: Card[],
-  cardUsage: CardUsageMap,
-): { deck: Card[]; discardPile: Card[]; cardUsage: CardUsageMap } {
-  const totalCategories = CATEGORIES.length  // 6
-
-  // Remove usage entries for fully exhausted cards so they are fresh again
-  const updatedUsage: CardUsageMap = {}
-  for (const [cardId, usedCategories] of Object.entries(cardUsage)) {
-    if (usedCategories.length < totalCategories) {
-      updatedUsage[cardId] = usedCategories  // still has unused words — keep tracking
-    }
-    // If all 6 categories are used, entry is omitted → card resets to fully fresh
-  }
-
-  return {
-    deck: shuffle(discardPile),
-    discardPile: [],
-    cardUsage: updatedUsage,
-  }
 }

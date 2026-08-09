@@ -14,24 +14,29 @@ import type {
 } from '../types/game'
 import type { GameAction } from './gameActions'
 import {
-  drawCard,
-  drawCardForCategory,
-  drawCards,
+  isFreshFor,
   recordCardUsage,
-  refillDeck,
+  takeCard,
+  takeCards,
+  type Need,
 } from '../utils/deck'
 import { isGameOver, nextTeamIndex } from '../utils/scoring'
 import { FINISH_INDEX, spaceAt } from '../constants/board'
 
-// Refill deck from discard when empty, then return the three mutable fields.
-function withFilledDeck(
-  deck: GameState['deck'],
-  discardPile: GameState['discardPile'],
-  cardUsage: GameState['cardUsage'],
-) {
-  if (deck.length > 0) return { deck, discardPile, cardUsage }
-  if (discardPile.length === 0) return { deck, discardPile, cardUsage }
-  return refillDeck(discardPile, cardUsage)
+/**
+ * What the current turn's next card must provide: the card's own ☸ word on
+ * chakra-words turns, the selected category once one is chosen, otherwise
+ * anything (score mode before the category is picked).
+ */
+function turnNeed(turn: Pick<TurnState, 'chakraWords' | 'selectedCategory'>): Need {
+  if (turn.chakraWords) return { kind: 'chakra' }
+  if (turn.selectedCategory) return { kind: 'category', category: turn.selectedCategory }
+  return { kind: 'any' }
+}
+
+/** Ids of every card on screen — pool selection must never duplicate them. */
+function onScreenIds(cards: readonly { id: string }[]): Set<string> {
+  return new Set(cards.map(c => c.id))
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -63,12 +68,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'START_TURN': {
-      const { deck, discardPile, cardUsage } = withFilledDeck(
-        state.deck, state.discardPile, state.cardUsage,
-      )
-      if (deck.length === 0) return state
-
-      const [initialCard, newDeck] = drawCard(deck)
       const team = state.teams[state.activeTeamIndex]
 
       // Board mode: the space the team is ON dictates the category (§8.2).
@@ -83,10 +82,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         else if (space.type === 'chakra') chakraWords = true
       }
 
+      // The need is known before the draw whenever the category is dictated
+      // (board spaces, ☸-words turns), so the OPENING card is word-fresh too —
+      // previously only mid-turn replacements were category-aware.
+      const need = turnNeed({ chakraWords, selectedCategory: boardCategory })
+      const taken = takeCard(state.deck, state.discardPile, state.cardUsage, need)
+      if (!taken) return state
+
       const freshTurn: TurnState = {
         teamId: team.id,
         phase: 'waiting',
-        activeCards: [initialCard],
+        activeCards: [taken.card],
         skipsUsed: 0,
         correctIds: [],
         voidedIds: [],
@@ -96,7 +102,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         timerStartedAt: null,
       }
 
-      return { ...state, deck: newDeck, discardPile, cardUsage, currentTurn: freshTurn }
+      return {
+        ...state,
+        deck: taken.deck,
+        discardPile: taken.discardPile,
+        currentTurn: freshTurn,
+      }
     }
 
     case 'END_GAME':
@@ -116,9 +127,38 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'REVEAL_CARD': {
       const turn = state.currentTurn
       if (!turn || turn.phase !== 'waiting') return state
+
+      // Score edition: the category is chosen while the opening card is still
+      // face-down, so the card can be re-resolved now that the need is known.
+      // If its word for the chosen category is already spent and a fresh card
+      // exists, swap silently — every card back looks identical, so nothing
+      // visible changes. Board and ☸-words turns drew need-aware at START_TURN
+      // and pass straight through here.
+      let { deck, discardPile } = state
+      let activeCards = turn.activeCards
+      const need = turnNeed(turn)
+      const top = activeCards[0]
+      if (
+        need.kind === 'category' &&
+        activeCards.length === 1 &&
+        top !== undefined &&
+        !isFreshFor(top, need, state.cardUsage)
+      ) {
+        const swap = takeCard(deck, discardPile, state.cardUsage, need, new Set([top.id]))
+        if (swap && swap.fresh) {
+          // The face-down card was never seen, so it returns to the deck front
+          // rather than the discard pile.
+          deck = [top, ...swap.deck]
+          discardPile = swap.discardPile
+          activeCards = [swap.card]
+        }
+      }
+
       return {
         ...state,
-        currentTurn: { ...turn, phase: 'active', timerStartedAt: Date.now() },
+        deck,
+        discardPile,
+        currentTurn: { ...turn, activeCards, phase: 'active', timerStartedAt: Date.now() },
       }
     }
 
@@ -168,23 +208,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let finalActiveCards = newActiveCards
 
       // Draw a replacement during active play once no PLAYABLE cards remain —
-      // voided cards stay stuck at the bottom and don't count.
+      // voided cards stay stuck at the bottom and don't count. The just-scored
+      // card is already in the discard pile here, so it is a legitimate
+      // candidate for a future need — but never for this one, since the word
+      // it just spent is recorded.
       const playableLeft = newActiveCards.filter(
         c => !turn.voidedIds.includes(c.id),
       ).length
       if (turn.phase === 'active' && playableLeft === 0) {
-        const filled = withFilledDeck(deck, discardPile, cardUsage)
-        deck = filled.deck
-        discardPile = filled.discardPile
-        cardUsage = filled.cardUsage
-
-        if (deck.length > 0) {
-          const [newCard, remaining] = state.config.boardMode && turn.selectedCategory
-            ? drawCardForCategory(deck, cardUsage, turn.selectedCategory)
-            : drawCard(deck)
-          deck = remaining
+        const taken = takeCard(
+          deck, discardPile, cardUsage, turnNeed(turn), onScreenIds(newActiveCards),
+        )
+        if (taken) {
+          deck = taken.deck
+          discardPile = taken.discardPile
           // New card on top; voided cards keep their place at the bottom
-          finalActiveCards = [newCard, ...newActiveCards]
+          finalActiveCards = [taken.card, ...newActiveCards]
         }
       }
 
@@ -220,19 +259,29 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         voidedCard,
       ]
 
+      // The describer said the word aloud, so everyone heard it: burn it.
+      // Snapshotted into usagePrev first, exactly like MARK_CORRECT, so
+      // undoing the turn restores the word.
       let { deck, discardPile, cardUsage } = state
+      let usagePrev = turn.usagePrev ?? {}
+      const spokenCategory = turn.chakraWords
+        ? voidedCard.chakraCategory
+        : turn.selectedCategory
+      if (spokenCategory) {
+        if (!(action.cardId in usagePrev)) {
+          usagePrev = { ...usagePrev, [action.cardId]: state.cardUsage[action.cardId] ?? [] }
+        }
+        cardUsage = recordCardUsage(cardUsage, action.cardId, spokenCategory)
+      }
+
       if (turn.phase === 'active') {
-        const filled = withFilledDeck(deck, discardPile, cardUsage)
-        deck = filled.deck
-        discardPile = filled.discardPile
-        cardUsage = filled.cardUsage
-        if (deck.length > 0) {
-          const [newCard, remaining] =
-            state.config.boardMode && turn.selectedCategory
-              ? drawCardForCategory(deck, cardUsage, turn.selectedCategory)
-              : drawCard(deck)
-          deck = remaining
-          activeCards = [newCard, ...activeCards]
+        const taken = takeCard(
+          deck, discardPile, cardUsage, turnNeed(turn), onScreenIds(activeCards),
+        )
+        if (taken) {
+          deck = taken.deck
+          discardPile = taken.discardPile
+          activeCards = [taken.card, ...activeCards]
         }
       }
 
@@ -245,6 +294,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...turn,
           activeCards,
           voidedIds: [...turn.voidedIds, action.cardId],
+          usagePrev,
         },
       }
     }
@@ -260,23 +310,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       ).length
       if (playableCount >= state.config.maxActiveCards) return state
 
-      const { deck, discardPile, cardUsage } = withFilledDeck(
-        state.deck, state.discardPile, state.cardUsage,
+      const taken = takeCard(
+        state.deck,
+        state.discardPile,
+        state.cardUsage,
+        turnNeed(turn),
+        onScreenIds(turn.activeCards),
       )
-      if (deck.length === 0) return state
-
-      const [newCard, newDeck] = state.config.boardMode && turn.selectedCategory
-        ? drawCardForCategory(deck, cardUsage, turn.selectedCategory)
-        : drawCard(deck)
+      if (!taken) return state
 
       return {
         ...state,
-        deck: newDeck,
-        discardPile,
-        cardUsage,
+        deck: taken.deck,
+        discardPile: taken.discardPile,
         currentTurn: {
           ...turn,
-          activeCards: [newCard, ...turn.activeCards],
+          activeCards: [taken.card, ...turn.activeCards],
           skipsUsed: turn.skipsUsed + 1,
         },
       }
@@ -466,27 +515,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const turn = state.currentTurn
       if (!turn) return state
 
-      // Cards on screen go to discard; a fresh card is drawn with a full timer.
-      const { deck, discardPile, cardUsage } = withFilledDeck(
-        state.deck,
-        [...state.discardPile, ...turn.activeCards],
-        state.cardUsage,
-      )
-      if (deck.length === 0) return state
-
-      const [freshCard, newDeck] = drawCard(deck)
+      // Cards on screen go to discard; a fresh card is drawn with a full
+      // timer. The just-abandoned cards are excluded so a false start never
+      // deals the same card straight back — unless literally nothing else
+      // remains, in which case the exclusion is dropped rather than stalling.
+      const discardAll = [...state.discardPile, ...turn.activeCards]
+      const taken =
+        takeCard(
+          state.deck, discardAll, state.cardUsage,
+          turnNeed(turn), onScreenIds(turn.activeCards),
+        ) ?? takeCard(state.deck, discardAll, state.cardUsage, turnNeed(turn))
+      if (!taken) return state
 
       // The physical game does not allow switching category mid-turn, so a
       // restart keeps the category that was already chosen and locks it.
       return {
         ...state,
-        deck: newDeck,
-        discardPile,
-        cardUsage,
+        deck: taken.deck,
+        discardPile: taken.discardPile,
         currentTurn: {
           ...turn,
           phase: 'waiting',
-          activeCards: [freshCard],
+          activeCards: [taken.card],
           skipsUsed: 0,
           voidedIds: [],
           selectedCategory: turn.selectedCategory,
@@ -580,30 +630,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     // ── Chakra Mode ───────────────────────────────────────────────────────
     case 'TRIGGER_CHAKRA': {
-      const needed = state.config.chakraCardCount
-      let { deck, discardPile, cardUsage } = state
-
-      // Ensure there are enough cards — may require multiple refills
-      while (deck.length < needed && discardPile.length > 0) {
-        const refilled = refillDeck(discardPile, cardUsage)
-        deck = [...deck, ...refilled.deck]
-        discardPile = refilled.discardPile
-        cardUsage = refilled.cardUsage
-      }
-
-      const available = Math.min(needed, deck.length)
-      if (available === 0) return state
-
-      const [chakraCards, newDeck] = drawCards(deck, available)
+      // Candidates must have a FRESH ☸ word — previously this took the top of
+      // the deck blind, so the describer could be offered a card whose ☸ word
+      // had already been played. Fresh-☸ cards fill the hand first;
+      // least-recently-seen repeats pad the remainder so the round always
+      // offers a full hand.
+      const { cards, deck, discardPile } = takeCards(
+        state.deck,
+        state.discardPile,
+        state.cardUsage,
+        { kind: 'chakra' },
+        state.config.chakraCardCount,
+      )
+      if (cards.length === 0) return state
 
       const chakraState: ChakraState = {
         phase: 'selecting',
-        cards: chakraCards,
+        cards,
         selectedCard: null,
         winningTeamId: null,
       }
 
-      return { ...state, phase: 'chakra', deck: newDeck, discardPile, cardUsage, chakraState }
+      return { ...state, phase: 'chakra', deck, discardPile, chakraState }
     }
 
     case 'CANCEL_CHAKRA': {
@@ -613,8 +661,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         phase: 'playing',
         chakraState: null,
-        // Offered cards go to the BOTTOM of the deck (the describer saw them)
-        deck: [...state.deck, ...state.chakraState.cards],
+        // The describer saw the offered cards, so they count as recently seen:
+        // back of the discard pile, not the deck (which holds only unseen
+        // cards). Their words were never spoken, so they stay fully fresh.
+        discardPile: [...state.discardPile, ...state.chakraState.cards],
       }
     }
 
@@ -667,8 +717,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'CONFIRM_CHAKRA_END': {
       if (!state.chakraState) return state
 
-      const { winningTeamId, cards: chakraCards } = state.chakraState
+      const { winningTeamId, cards: chakraCards, selectedCard } = state.chakraState
       const discardPile = [...state.discardPile, ...chakraCards]
+
+      // The chosen card's ☸ word was described to the whole room, so it is
+      // spent whether or not anyone guessed it. Snapshot the card's previous
+      // usage into the summary so UNDO restores it. Previously nothing was
+      // recorded here at all, and a guessed ☸ word could reappear later.
+      let cardUsage = state.cardUsage
+      let chakraUsagePrev: Record<string, typeof cardUsage[string]> | undefined
+      if (selectedCard) {
+        chakraUsagePrev = { [selectedCard.id]: state.cardUsage[selectedCard.id] ?? [] }
+        cardUsage = recordCardUsage(cardUsage, selectedCard.id, selectedCard.chakraCategory)
+      }
 
       // The Chakra round replaced the active team's turn, so rotation advances.
       const nextIdx = nextTeamIndex(state.activeTeamIndex, state.teams.length)
@@ -708,6 +769,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             : 0,
         cardIds: chakraCards.map(c => c.id),
         finalRoundPrev: state.finalRound,
+        ...(chakraUsagePrev && { usagePrev: chakraUsagePrev }),
         ...(state.config.boardMode && winnerTeamIdx >= 0 && { boardPosPrev: winnerOldPos }),
       }
 
@@ -715,6 +777,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         chakraState: null,
         discardPile,
+        cardUsage,
         turnHistory: [...state.turnHistory, summary],
         activeTeamIndex: winnerIdx >= 0 ? winnerIdx : nextIdx,
         resumeTeamIndex: winnerIdx >= 0 ? nextIdx : null,
