@@ -76,19 +76,43 @@ export function subscribeFeedbackPrefs(listener: () => void): () => void {
 
 // ── Audio ───────────────────────────────────────────────────────────────────
 
-const players = new Map<SoundName, AudioPlayer>()
+/**
+ * Each sound gets a small pool of players used round-robin.
+ *
+ * A single player per sound drops every other press: seekTo() is
+ * asynchronous, so a rapid second tap calls play() while the player is still
+ * parked at the end of the clip and nothing is heard. Cycling through several
+ * players means a re-triggered sound always lands on one that is already
+ * rewound, and overlapping taps layer instead of cutting each other off.
+ */
+const POOL_SIZE = 3
+
+interface Pool {
+  players: AudioPlayer[]
+  next: number
+}
+
+const pools = new Map<SoundName, Pool>()
 
 function play(name: SoundName): void {
   if (!prefs.sound) return
   try {
-    let player = players.get(name)
-    if (!player) {
-      player = createAudioPlayer(SOURCES[name])
-      players.set(name, player)
+    let pool = pools.get(name)
+    if (!pool) {
+      pool = {
+        players: Array.from({ length: POOL_SIZE }, () => createAudioPlayer(SOURCES[name])),
+        next: 0,
+      }
+      pools.set(name, pool)
     }
-    // Rewind first: taps can land faster than a clip finishes, and a player
-    // parked at the end would otherwise stay silent.
-    player.seekTo(0)
+
+    const player = pool.players[pool.next]
+    pool.next = (pool.next + 1) % POOL_SIZE
+
+    // Rewind for the case where this player is being reused. The pool gives
+    // the seek two further presses to complete before this player comes round
+    // again, so it is never raced the way a single player was.
+    void player.seekTo(0).catch(() => {})
     player.play()
   } catch {
     // A sound failing to play is never worth surfacing.
@@ -120,6 +144,15 @@ export const feedback = {
   tap(): void {
     impact(Haptics.ImpactFeedbackStyle.Light)
     play('tap')
+  },
+
+  /**
+   * Moving between cards in Just Cards. Haptic only, deliberately silent:
+   * browsing the deck means tapping next dozens of times in a row, and a
+   * click on every one of those is grating rather than helpful.
+   */
+  navigate(): void {
+    impact(Haptics.ImpactFeedbackStyle.Light)
   },
 
   /** Choosing between options: a category, the card language. */

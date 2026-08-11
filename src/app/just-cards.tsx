@@ -119,7 +119,7 @@ export default function JustCardsScreen() {
   }
 
   const goNext = () => {
-    feedback.tap()
+    feedback.navigate()
     dealTo(1, () => {
       if (isLast) {
         setDeck(shuffled(ALL_CARDS))
@@ -132,7 +132,7 @@ export default function JustCardsScreen() {
 
   const goPrev = () => {
     if (isFirst) return
-    feedback.tap()
+    feedback.navigate()
     dealTo(-1, () => setIndex(i => i - 1))
   }
 

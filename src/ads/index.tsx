@@ -103,16 +103,24 @@ function unitId(kind: UnitKind): string {
  * layout.
  *
  * gatherConsent() presents the UMP form when one is required and does nothing
- * where it is not (most non-EEA users). Ads are only enabled if it reports
- * canRequestAds — which stays true when a user accepts a limited set of
- * purposes, in which case Google serves non-personalised ads.
+ * where it is not (most non-EEA users). It reports canRequestAds, which stays
+ * true when a user accepts only a limited set of purposes — Google then serves
+ * non-personalised ads.
  *
- * Any failure leaves ads off. That is deliberate: showing ads without having
- * resolved consent is the one outcome worth avoiding, and a game that quietly
- * runs ad-free is strictly better than a compliance problem.
+ * LIVE ads fail closed: without resolved consent, nothing is requested.
+ * TEST ads do not, and deliberately so. A test ad requests no real user data
+ * and earns nothing, so there is no consent to protect — but gating both
+ * identically meant an unpublished GDPR message, or any transient consent
+ * error, silently produced a tester build with no ads at all and no way to
+ * tell that from an unfilled ad request.
+ *
+ * Consent is gathered in its own try block for the same reason: a throw here
+ * must not skip SDK initialisation for test ads.
  */
 export async function initialiseAds(): Promise<void> {
   if (!ADS_ENABLED) return
+
+  let consentAllowsAds = false
   try {
     const info = await AdsConsent.gatherConsent()
 
@@ -121,32 +129,35 @@ export async function initialiseAds(): Promise<void> {
       AdsConsentPrivacyOptionsRequirementStatus.REQUIRED
     emit()
 
-    if (!info.canRequestAds) {
+    consentAllowsAds = info.canRequestAds
+    if (!consentAllowsAds) {
       // Most often this means no GDPR message has been published under
       // Privacy & messaging in AdMob, so a regulated user cannot be asked for
-      // consent and therefore no ad may be requested. Silence here is the one
-      // failure mode that looks identical to "ads just aren't filling", so say
-      // so rather than leaving nothing to go on.
+      // consent and no live ad may be requested.
       warnAdsDisabled(
         `consent did not permit ads (status=${info.status}, ` +
           `formAvailable=${info.isConsentFormAvailable})`,
       )
-      return
     }
+  } catch (error) {
+    warnAdsDisabled(`consent could not be resolved: ${String(error)}`)
+  }
 
-    // iOS only: ask for the IDFA after the UMP form, per Google's ordering.
-    // Declining is fine — it costs personalisation, not ads, so we carry on
-    // either way. The ads SDK writes the Info.plist string but never requests
-    // this itself, so it has to happen here.
-    if (Platform.OS === 'ios') {
-      await requestTrackingPermissionsAsync().catch(() => null)
-    }
+  if (!consentAllowsAds && !USE_TEST_ADS) return
 
+  // iOS only: ask for the IDFA after the UMP form, per Google's ordering.
+  // Declining is fine — it costs personalisation, not ads, so we carry on
+  // either way. The ads SDK writes the Info.plist string but never requests
+  // this itself, so it has to happen here.
+  if (Platform.OS === 'ios') {
+    await requestTrackingPermissionsAsync().catch(() => null)
+  }
+
+  try {
     await mobileAds().initialize()
     adsReady = true
     emit()
   } catch (error) {
-    // Offline, or consent could not be resolved — play on without ads.
     warnAdsDisabled(`initialisation threw: ${String(error)}`)
   }
 }
