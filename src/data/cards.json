@@ -2,401 +2,1001 @@
   {
     "id": "c001",
     "words": {
-      "People": "Mohanlal",
-      "Location": "Kochi",
-      "Object": "Chenda",
-      "Movie": "Drishyam",
-      "Nature": "Thenga",
-      "Random": "Hartal"
+      "People": "Mahatma Gandhi",
+      "Location": "Taj Mahal",
+      "Object": "Jio",
+      "Movie": "Dhoom",
+      "Nature": "Mullapoo",
+      "Random": "Idea Star Singer"
     },
     "wordsMl": {
-      "People": "മോഹൻലാൽ",
-      "Location": "കൊച്ചി",
-      "Object": "ചെണ്ട",
-      "Movie": "ദൃശ്യം",
-      "Nature": "തേങ്ങ",
-      "Random": "ഹർത്താൽ"
+      "People": "മഹാത്മാ ഗാന്ധി",
+      "Location": "താജ് മഹൽ",
+      "Object": "ജിയോ",
+      "Movie": "ധൂം",
+      "Nature": "മുല്ലപ്പൂ",
+      "Random": "ഐഡിയ സ്റ്റാർ സിംഗർ"
     },
-    "chakraCategory": "Movie"
+    "chakraCategory": "People"
   },
   {
     "id": "c002",
     "words": {
-      "People": "Mammootty",
-      "Location": "Trivandrum",
-      "Object": "Matta",
-      "Movie": "Manichithrathazhu",
-      "Nature": "Kariveppu",
-      "Random": "Bandh"
+      "People": "Vikram",
+      "Location": "Delhi",
+      "Object": "Kindi",
+      "Movie": "No. 20 Madras Mail",
+      "Nature": "Curry Leaves",
+      "Random": "Chutney"
     },
     "wordsMl": {
-      "People": "മമ്മൂട്ടി",
-      "Location": "തിരുവനന്തപുരം",
-      "Object": "മട്ട",
-      "Movie": "മണിച്ചിത്രത്താഴ്",
-      "Nature": "കറിവേപ്പ്",
-      "Random": "ബന്ദ്"
+      "People": "വിക്രം",
+      "Location": "ഡൽഹി",
+      "Object": "കിണ്ടി",
+      "Movie": "നമ്പർ 20 മദ്രാസ് മെയിൽ",
+      "Nature": "കറിവേപ്പില",
+      "Random": "ചട്ണി"
     },
-    "chakraCategory": "People"
+    "chakraCategory": "Location"
   },
   {
     "id": "c003",
     "words": {
-      "People": "Prithviraj",
-      "Location": "Munnar",
-      "Object": "Veena",
-      "Movie": "Premam",
-      "Nature": "Teak tree",
-      "Random": "Sadhya"
+      "People": "Rajinikanth",
+      "Location": "Mumbai",
+      "Object": "Airtel",
+      "Movie": "Manichitrathazhu",
+      "Nature": "Coriander",
+      "Random": "Sambar"
     },
     "wordsMl": {
-      "People": "പൃഥ്വിരാജ്",
-      "Location": "മൂന്നാർ",
-      "Object": "വീണ",
-      "Movie": "പ്രേമം",
-      "Nature": "തേക്ക്",
-      "Random": "സദ്യ"
+      "People": "രജിനികാന്ത്",
+      "Location": "മുംബൈ",
+      "Object": "എയർടെൽ",
+      "Movie": "മണിച്ചിത്രത്താഴ്",
+      "Nature": "മല്ലിയില",
+      "Random": "സാമ്പാർ"
     },
-    "chakraCategory": "Nature"
+    "chakraCategory": "Object"
   },
   {
     "id": "c004",
     "words": {
-      "People": "Dileep",
-      "Location": "Guruvayur",
-      "Object": "Kathakali mask",
-      "Movie": "Minnaram",
-      "Nature": "Elephant",
-      "Random": "Thiruvathira"
+      "People": "St. Thomas",
+      "Location": "Mysore Palace",
+      "Object": "Broasted",
+      "Movie": "Narasimham",
+      "Nature": "Lotus",
+      "Random": "Parle-G"
     },
     "wordsMl": {
-      "People": "ദിലീപ്",
-      "Location": "ഗുരുവായൂർ",
-      "Object": "കഥകളി മുഖംമൂടി",
-      "Movie": "മിന്നാരം",
-      "Nature": "ആന",
-      "Random": "തിരുവാതിര"
+      "People": "സെന്റ് തോമസ്",
+      "Location": "മൈസൂർ കൊട്ടാരം",
+      "Object": "ബ്രോസ്റ്റഡ്",
+      "Movie": "നരസിംഹം",
+      "Nature": "താമര",
+      "Random": "പാർലെ-ജി"
     },
-    "chakraCategory": "Object"
+    "chakraCategory": "Movie"
   },
   {
     "id": "c005",
     "words": {
-      "People": "Fahadh Faasil",
-      "Location": "Varkala",
-      "Object": "Chembu",
-      "Movie": "Bangalore Days",
-      "Nature": "Peacock",
-      "Random": "Vishu"
+      "People": "Mohanlal",
+      "Location": "Chaiwala",
+      "Object": "Filter Coffee",
+      "Movie": "Yodha",
+      "Nature": "Elephant",
+      "Random": "Rasam"
     },
     "wordsMl": {
-      "People": "ഫഹദ് ഫാസിൽ",
-      "Location": "വർക്കല",
-      "Object": "ചെമ്പ്",
-      "Movie": "ബാംഗ്ലൂർ ഡേയ്സ്",
-      "Nature": "മയിൽ",
-      "Random": "വിഷു"
+      "People": "മോഹൻലാൽ",
+      "Location": "ചായവാല",
+      "Object": "ഫിൽട്ടർ കോഫി",
+      "Movie": "യോദ്ധാ",
+      "Nature": "ആന",
+      "Random": "രസം"
     },
-    "chakraCategory": "Location"
+    "chakraCategory": "Nature"
   },
   {
     "id": "c006",
     "words": {
-      "People": "Parvathy",
-      "Location": "Alappuzha",
-      "Object": "Kettuvallam",
-      "Movie": "Charlie",
-      "Nature": "Paddy field",
-      "Random": "Onam"
+      "People": "Mammootty",
+      "Location": "Tonico Cafe",
+      "Object": "KSRTC Bus",
+      "Movie": "RRR",
+      "Nature": "Bengal Tiger",
+      "Random": "Sharjah Shake"
     },
     "wordsMl": {
-      "People": "പാർവതി",
-      "Location": "ആലപ്പുഴ",
-      "Object": "കെട്ടുവള്ളം",
-      "Movie": "ചാർലി",
-      "Nature": "നെൽവയൽ",
-      "Random": "ഓണം"
+      "People": "മമ്മൂട്ടി",
+      "Location": "ടോണികോ കഫേ",
+      "Object": "കെഎസ്ആർടിസി ബസ്",
+      "Movie": "ആർആർആർ",
+      "Nature": "ബംഗാൾ കടുവ",
+      "Random": "ഷാർജ ഷേക്ക്"
     },
-    "chakraCategory": "People"
+    "chakraCategory": "Random"
   },
   {
     "id": "c007",
     "words": {
-      "People": "Dulquer Salmaan",
-      "Location": "Thrissur",
-      "Object": "Umbrella",
-      "Movie": "OK Kanmani",
-      "Nature": "Mango tree",
-      "Random": "Boat race"
+      "People": "Dileep",
+      "Location": "28 States",
+      "Object": "Vande Bharat Express",
+      "Movie": "Koi Mil Gaya",
+      "Nature": "King Cobra",
+      "Random": "Rusk"
     },
     "wordsMl": {
-      "People": "ദുൽഖർ സൽമാൻ",
-      "Location": "തൃശ്ശൂർ",
-      "Object": "കുട",
-      "Movie": "ഒകെ കൺമണി",
-      "Nature": "മാവ്",
-      "Random": "വള്ളംകളി"
+      "People": "ദിലീപ്",
+      "Location": "28 സംസ്ഥാനങ്ങൾ",
+      "Object": "വന്ദേ ഭാരത് എക്സ്പ്രസ്",
+      "Movie": "കോയി മിൽ ഗയാ",
+      "Nature": "രാജവെമ്പാല",
+      "Random": "റസ്ക്"
     },
-    "chakraCategory": "Movie"
+    "chakraCategory": "People"
   },
   {
     "id": "c008",
     "words": {
-      "People": "Jayaram",
-      "Location": "Palakkad",
-      "Object": "Uruli",
-      "Movie": "Kilukkam",
-      "Nature": "Hibiscus",
-      "Random": "Kudumbasree"
+      "People": "Byju's",
+      "Location": "Kumarakom",
+      "Object": "Ashoka Chakra",
+      "Movie": "Rab Ne Bana Di Jodi",
+      "Nature": "Monkey",
+      "Random": "Ayurvedam"
     },
     "wordsMl": {
-      "People": "ജയറാം",
-      "Location": "പാലക്കാട്",
-      "Object": "ഉരുളി",
-      "Movie": "കിലുക്കം",
-      "Nature": "ചെമ്പരത്തി",
-      "Random": "കുടുംബശ്രീ"
+      "People": "ബൈജൂസ്",
+      "Location": "കുമരകം",
+      "Object": "അശോക ചക്രം",
+      "Movie": "രബ് നേ ബനാ ദി ജോഡി",
+      "Nature": "കുരങ്ങ്",
+      "Random": "ആയുർവേദം"
     },
-    "chakraCategory": "Random"
+    "chakraCategory": "Location"
   },
   {
     "id": "c009",
     "words": {
-      "People": "Shobhana",
-      "Location": "Wayanad",
-      "Object": "Nettipattam",
-      "Movie": "Thoovanathumbikal",
-      "Nature": "Jackfruit",
-      "Random": "Vallam kali"
+      "People": "Vasco Da Gama",
+      "Location": "Thrissur",
+      "Object": "Chandrayaan Satellite",
+      "Movie": "3 Idiots",
+      "Nature": "Chaala",
+      "Random": "Scorpio"
     },
     "wordsMl": {
-      "People": "ശോഭന",
-      "Location": "വയനാട്",
-      "Object": "നെറ്റിപ്പട്ടം",
-      "Movie": "തൂവാനത്തുമ്പികൾ",
-      "Nature": "ചക്ക",
-      "Random": "വള്ളംകളി"
+      "People": "വാസ്കോ ഡ ഗാമ",
+      "Location": "തൃശ്ശൂർ",
+      "Object": "ചന്ദ്രയാൻ ഉപഗ്രഹം",
+      "Movie": "3 ഇഡിയറ്റ്സ്",
+      "Nature": "ചാള",
+      "Random": "സ്കോർപിയോ"
     },
-    "chakraCategory": "Nature"
+    "chakraCategory": "Object"
   },
   {
     "id": "c010",
     "words": {
-      "People": "Suresh Gopi",
-      "Location": "Kozhikode",
-      "Object": "Achappam",
-      "Movie": "Commissioner",
-      "Nature": "Tiger",
-      "Random": "Pooram"
+      "People": "Veerappan",
+      "Location": "Chalakudy",
+      "Object": "Federal Bank",
+      "Movie": "Taare Zameen Par",
+      "Nature": "Periyar River",
+      "Random": "Chai"
     },
     "wordsMl": {
-      "People": "സുരേഷ് ഗോപി",
-      "Location": "കോഴിക്കോട്",
-      "Object": "അച്ചപ്പം",
-      "Movie": "കമ്മീഷണർ",
-      "Nature": "കടുവ",
-      "Random": "പൂരം"
+      "People": "വീരപ്പൻ",
+      "Location": "ചാലക്കുടി",
+      "Object": "ഫെഡറൽ ബാങ്ക്",
+      "Movie": "താരേ സമീൻ പർ",
+      "Nature": "പെരിയാർ നദി",
+      "Random": "ചായ"
     },
-    "chakraCategory": "Object"
+    "chakraCategory": "Movie"
   },
   {
     "id": "c011",
     "words": {
-      "People": "Kavya Madhavan",
-      "Location": "Ernakulam",
-      "Object": "Thazhampoo",
-      "Movie": "Christian Brothers",
-      "Nature": "Banyan tree",
-      "Random": "Attukal pongala"
-    },
-    "wordsMl": {
-      "People": "കാവ്യ മാധവൻ",
-      "Location": "എറണാകുളം",
-      "Object": "താഴമ്പൂ",
-      "Movie": "ക്രിസ്ത്യൻ ബ്രദേഴ്സ്",
-      "Nature": "ആൽമരം",
-      "Random": "ആറ്റുകാൽ പൊങ്കാല"
-    },
-    "chakraCategory": "People"
-  },
-  {
-    "id": "c012",
-    "words": {
-      "People": "Biju Menon",
-      "Location": "Idukki",
-      "Object": "Palayam",
-      "Movie": "Ordinary",
-      "Nature": "Kingfisher",
-      "Random": "Puthuchery"
-    },
-    "wordsMl": {
-      "People": "ബിജു മേനോൻ",
-      "Location": "ഇടുക്കി",
-      "Object": "പാളയം",
-      "Movie": "ഓർഡിനറി",
-      "Nature": "പൊന്മാൻ",
-      "Random": "പുതുച്ചേരി"
-    },
-    "chakraCategory": "Location"
-  },
-  {
-    "id": "c013",
-    "words": {
-      "People": "Indrajith",
-      "Location": "Kasaragod",
-      "Object": "Thorthu",
-      "Movie": "Thanmathra",
-      "Nature": "Bamboo",
-      "Random": "Pulikali"
-    },
-    "wordsMl": {
-      "People": "ഇന്ദ്രജിത്ത്",
-      "Location": "കാസർകോട്",
-      "Object": "തോർത്ത്",
-      "Movie": "തന്മാത്ര",
-      "Nature": "മുള",
-      "Random": "പുലികളി"
-    },
-    "chakraCategory": "Movie"
-  },
-  {
-    "id": "c014",
-    "words": {
-      "People": "Manju Warrier",
-      "Location": "Kannur",
-      "Object": "Uriyadi",
-      "Movie": "How Old Are You",
-      "Nature": "Lotus",
-      "Random": "Theyyam"
-    },
-    "wordsMl": {
-      "People": "മഞ്ജു വാര്യർ",
-      "Location": "കണ്ണൂർ",
-      "Object": "ഉറിയടി",
-      "Movie": "ഹൗ ഓൾഡ് ആർ യു",
-      "Nature": "താമര",
-      "Random": "തെയ്യം"
-    },
-    "chakraCategory": "Random"
-  },
-  {
-    "id": "c015",
-    "words": {
-      "People": "Tovino Thomas",
+      "People": "Narendra Modi",
       "Location": "Kottayam",
-      "Object": "Pavadam",
-      "Movie": "Godha",
-      "Nature": "Backwaters",
-      "Random": "Kottiyoor"
+      "Object": "Santosh Brami",
+      "Movie": "Life of Pi",
+      "Nature": "Cinnamon stick",
+      "Random": "JAVA"
     },
     "wordsMl": {
-      "People": "ടൊവിനോ തോമസ്",
+      "People": "നരേന്ദ്ര മോദി",
       "Location": "കോട്ടയം",
-      "Object": "പാവാട",
-      "Movie": "ഗോദ",
-      "Nature": "കായൽ",
-      "Random": "കൊട്ടിയൂർ"
+      "Object": "സന്തോഷ് ബ്രാഹ്മി",
+      "Movie": "ലൈഫ് ഓഫ് പൈ",
+      "Nature": "കറുവപ്പട്ട",
+      "Random": "ജാവ"
     },
     "chakraCategory": "Nature"
   },
   {
-    "id": "c016",
+    "id": "c012",
     "words": {
-      "People": "Nivin Pauly",
-      "Location": "Periyar",
-      "Object": "Kozhalappam",
-      "Movie": "1983",
-      "Nature": "King cobra",
-      "Random": "Vallom"
+      "People": "A P J Abdul Kalam",
+      "Location": "Andaman And Nicobar",
+      "Object": "Popy Kuda",
+      "Movie": "Slumdog Millionaire",
+      "Nature": "Snakes",
+      "Random": "AMMA"
     },
     "wordsMl": {
-      "People": "നിവിൻ പോളി",
-      "Location": "പെരിയാർ",
-      "Object": "കുഴലപ്പം",
-      "Movie": "1983",
-      "Nature": "രാജവെമ്പാല",
-      "Random": "വള്ളം"
+      "People": "എ പി ജെ അബ്ദുൾ കലാം",
+      "Location": "ആൻഡമാൻ നിക്കോബാർ",
+      "Object": "പോപ്പി കുട",
+      "Movie": "സ്ലംഡോഗ് മില്യണയർ",
+      "Nature": "പാമ്പുകൾ",
+      "Random": "അമ്മ"
     },
-    "chakraCategory": "Object"
+    "chakraCategory": "Random"
   },
   {
-    "id": "c017",
+    "id": "c013",
     "words": {
-      "People": "Vineeth Sreenivasan",
-      "Location": "Thrissur Pooram ground",
-      "Object": "Ottanthullal costume",
-      "Movie": "Thattathin Marayathu",
-      "Nature": "Spotted deer",
-      "Random": "Kummatti"
+      "People": "Manmohan Singh",
+      "Location": "Manali",
+      "Object": "Urli",
+      "Movie": "Romancham",
+      "Nature": "Cockroach",
+      "Random": "Sambal"
     },
     "wordsMl": {
-      "People": "വിനീത് ശ്രീനിവാസൻ",
-      "Location": "തേക്കിൻകാട് മൈതാനം",
-      "Object": "ഓട്ടൻതുള്ളൽ വേഷം",
-      "Movie": "തട്ടത്തിൻ മറയത്ത്",
-      "Nature": "പുള്ളിമാൻ",
-      "Random": "കുമ്മാട്ടി"
+      "People": "മൻമോഹൻ സിംഗ്",
+      "Location": "മണാലി",
+      "Object": "ഉരുളി",
+      "Movie": "റൊമാഞ്ചം",
+      "Nature": "പാറ്റ",
+      "Random": "സാമ്പൽ"
     },
     "chakraCategory": "People"
   },
   {
-    "id": "c018",
+    "id": "c014",
     "words": {
-      "People": "Mukesh",
-      "Location": "Padmanabhaswamy temple",
-      "Object": "Murikku",
-      "Movie": "In Harihar Nagar",
-      "Nature": "Vayal",
-      "Random": "Aranmula mirror"
+      "People": "Sachin Tendulkar",
+      "Location": "Red Fort",
+      "Object": "Mandakini",
+      "Movie": "Manjummel Boys",
+      "Nature": "Palli",
+      "Random": "Rummy"
     },
     "wordsMl": {
-      "People": "മുകേഷ്",
-      "Location": "പത്മനാഭസ്വാമി ക്ഷേത്രം",
-      "Object": "മുരിക്ക്",
-      "Movie": "ഇൻ ഹരിഹർ നഗർ",
-      "Nature": "വയൽ",
-      "Random": "ആറന്മുള കണ്ണാടി"
+      "People": "സച്ചിൻ ടെണ്ടുൽക്കർ",
+      "Location": "ചെങ്കോട്ട",
+      "Object": "മന്ദാകിനി",
+      "Movie": "മഞ്ഞുമ്മൽ ബോയ്സ്",
+      "Nature": "പല്ലി",
+      "Random": "റമ്മി"
     },
     "chakraCategory": "Location"
   },
   {
-    "id": "c019",
+    "id": "c015",
     "words": {
-      "People": "Lal",
-      "Location": "Kappad beach",
-      "Object": "Kukku",
-      "Movie": "Chattambinadu",
-      "Nature": "Monitor lizard",
-      "Random": "Kolkali"
+      "People": "Mahendra Singh Dhoni",
+      "Location": "Leh - Ladak",
+      "Object": "Kirpan",
+      "Movie": "Jodhaa Akbar",
+      "Nature": "Minna Minni",
+      "Random": "Music Mojo"
     },
     "wordsMl": {
-      "People": "ലാൽ",
-      "Location": "കാപ്പാട് ബീച്ച്",
-      "Object": "കുക്കു",
-      "Movie": "ചട്ടമ്പിനാട്",
-      "Nature": "ഉടുമ്പ്",
-      "Random": "കോൽക്കളി"
+      "People": "മഹേന്ദ്ര സിംഗ് ധോണി",
+      "Location": "ലേ - ലഡാക്ക്",
+      "Object": "കൃപാൺ",
+      "Movie": "ജോധാ അക്ബർ",
+      "Nature": "മിന്നാമിന്നി",
+      "Random": "മ്യൂസിക് മോജോ"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c016",
+    "words": {
+      "People": "Virat Kohli",
+      "Location": "Kashmir",
+      "Object": "Dandiya Sticks",
+      "Movie": "Lagaan",
+      "Nature": "Thotta Vaadi",
+      "Random": "Coke Studio"
+    },
+    "wordsMl": {
+      "People": "വിരാട് കോലി",
+      "Location": "കാശ്മീർ",
+      "Object": "ദാണ്ഡിയ വടികൾ",
+      "Movie": "ലഗാൻ",
+      "Nature": "തൊട്ടാവാടി",
+      "Random": "കോക്ക് സ്റ്റുഡിയോ"
     },
     "chakraCategory": "Movie"
   },
   {
-    "id": "c020",
+    "id": "c017",
     "words": {
-      "People": "Siddique",
-      "Location": "Silent Valley",
-      "Object": "Aval",
-      "Movie": "In Ghost House Inn",
-      "Nature": "Monsoon",
+      "People": "A R Rahman",
+      "Location": "Golden Temple",
+      "Object": "Morpheus",
+      "Movie": "Guzaarish",
+      "Nature": "Jackfruit",
       "Random": "Kathakali"
     },
     "wordsMl": {
-      "People": "സിദ്ദിഖ്",
-      "Location": "സൈലന്റ് വാലി",
-      "Object": "അവൽ",
-      "Movie": "ഇൻ ഗോസ്റ്റ് ഹൗസ് ഇൻ",
-      "Nature": "മൺസൂൺ",
+      "People": "എ ആർ റഹ്മാൻ",
+      "Location": "സുവർണ ക്ഷേത്രം",
+      "Object": "മോർഫിയസ്",
+      "Movie": "ഗുസാരിഷ്",
+      "Nature": "ചക്ക",
       "Random": "കഥകളി"
     },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c018",
+    "words": {
+      "People": "Arijit Singh",
+      "Location": "Malabar",
+      "Object": "Cricket Bat",
+      "Movie": "Kabhi Khushi Kabhie Gham",
+      "Nature": "Mango",
+      "Random": "Yoga"
+    },
+    "wordsMl": {
+      "People": "അരിജിത് സിംഗ്",
+      "Location": "മലബാർ",
+      "Object": "ക്രിക്കറ്റ് ബാറ്റ്",
+      "Movie": "കഭി ഖുഷി കഭി ഗം",
+      "Nature": "മാങ്ങ",
+      "Random": "യോഗ"
+    },
     "chakraCategory": "Random"
+  },
+  {
+    "id": "c019",
+    "words": {
+      "People": "P V Sindhu",
+      "Location": "Mullaperiyar Dam",
+      "Object": "Jockey",
+      "Movie": "KGF",
+      "Nature": "Star Anise",
+      "Random": "Garba"
+    },
+    "wordsMl": {
+      "People": "പി വി സിന്ധു",
+      "Location": "മുല്ലപ്പെരിയാർ അണക്കെട്ട്",
+      "Object": "ജോക്കി",
+      "Movie": "കെജിഎഫ്",
+      "Nature": "തക്കോലം",
+      "Random": "ഗർബ"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c020",
+    "words": {
+      "People": "Minnal Murali",
+      "Location": "India Gate",
+      "Object": "Stitch ball",
+      "Movie": "Baahubali",
+      "Nature": "Banana",
+      "Random": "Onam"
+    },
+    "wordsMl": {
+      "People": "മിന്നൽ മുരളി",
+      "Location": "ഇന്ത്യാ ഗേറ്റ്",
+      "Object": "സ്റ്റിച്ച് ബോൾ",
+      "Movie": "ബാഹുബലി",
+      "Nature": "പഴം",
+      "Random": "ഓണം"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c021",
+    "words": {
+      "People": "Fahadh Faasil",
+      "Location": "Agra Fort",
+      "Object": "GPay",
+      "Movie": "Kalyanaraman",
+      "Nature": "Poovan Pazham",
+      "Random": "KTM Duke"
+    },
+    "wordsMl": {
+      "People": "ഫഹദ് ഫാസിൽ",
+      "Location": "ആഗ്ര കോട്ട",
+      "Object": "ജിപേ",
+      "Movie": "കല്യാണരാമൻ",
+      "Nature": "പൂവൻ പഴം",
+      "Random": "കെടിഎം ഡ്യൂക്ക്"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c022",
+    "words": {
+      "People": "Tovino Thomas",
+      "Location": "Ajanta Caves",
+      "Object": "Vatte",
+      "Movie": "CID Moosa",
+      "Nature": "Kayal",
+      "Random": "T20"
+    },
+    "wordsMl": {
+      "People": "ടൊവിനോ തോമസ്",
+      "Location": "അജന്ത ഗുഹകൾ",
+      "Object": "വട്ട",
+      "Movie": "സിഐഡി മൂസ",
+      "Nature": "കായൽ",
+      "Random": "ടി20"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c023",
+    "words": {
+      "People": "Shaktimaan",
+      "Location": "Wayanad",
+      "Object": "Stumps",
+      "Movie": "Chathikkatha Chanthu",
+      "Nature": "Coconut",
+      "Random": "IPL"
+    },
+    "wordsMl": {
+      "People": "ശക്തിമാൻ",
+      "Location": "വയനാട്",
+      "Object": "സ്റ്റംപ്സ്",
+      "Movie": "ചതിക്കാത്ത ചന്തു",
+      "Nature": "തേങ്ങ",
+      "Random": "ഐപിഎൽ"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c024",
+    "words": {
+      "People": "Chhota Bheem",
+      "Location": "Qutab Minar",
+      "Object": "Royal Enfield",
+      "Movie": "83",
+      "Nature": "Tender Coconut",
+      "Random": "Egg Puffs"
+    },
+    "wordsMl": {
+      "People": "ഛോട്ടാ ഭീം",
+      "Location": "കുത്തബ് മിനാർ",
+      "Object": "റോയൽ എൻഫീൽഡ്",
+      "Movie": "83",
+      "Nature": "ഇളനീർ",
+      "Random": "എഗ് പഫ്സ്"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c025",
+    "words": {
+      "People": "Thirumali",
+      "Location": "Lotus Temple",
+      "Object": "Kopiko",
+      "Movie": "Lucifer",
+      "Nature": "Pistachio",
+      "Random": "Murku"
+    },
+    "wordsMl": {
+      "People": "തിരുമാലി",
+      "Location": "ലോട്ടസ് ടെമ്പിൾ",
+      "Object": "കോപ്പിക്കോ",
+      "Movie": "ലൂസിഫർ",
+      "Nature": "പിസ്ത",
+      "Random": "മുറുക്ക്"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c026",
+    "words": {
+      "People": "Rakesh Sharma",
+      "Location": "Chandni Chowk",
+      "Object": "Helmet",
+      "Movie": "Vettam",
+      "Nature": "Cardamom",
+      "Random": "Kerala Blasters"
+    },
+    "wordsMl": {
+      "People": "രാകേഷ് ശർമ",
+      "Location": "ചാന്ദ്നി ചൗക്ക്",
+      "Object": "ഹെൽമെറ്റ്",
+      "Movie": "വേട്ടം",
+      "Nature": "ഏലക്ക",
+      "Random": "കേരള ബ്ലാസ്റ്റേഴ്സ്"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c027",
+    "words": {
+      "People": "Milkha Singh",
+      "Location": "Kuttanad",
+      "Object": "Toddy",
+      "Movie": "Runway",
+      "Nature": "Black Pepper",
+      "Random": "Pazham Puri"
+    },
+    "wordsMl": {
+      "People": "മിൽഖാ സിംഗ്",
+      "Location": "കുട്ടനാട്",
+      "Object": "കള്ള്",
+      "Movie": "റൺവേ",
+      "Nature": "കുരുമുളക്",
+      "Random": "പഴംപൊരി"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c028",
+    "words": {
+      "People": "Nora Fatehi",
+      "Location": "Nalanda University",
+      "Object": "Ball Ice Cream",
+      "Movie": "Chotta Mumbai",
+      "Nature": "Banana Leaves",
+      "Random": "Bribe"
+    },
+    "wordsMl": {
+      "People": "നോറ ഫതേഹി",
+      "Location": "നളന്ദ സർവകലാശാല",
+      "Object": "ബോൾ ഐസ്ക്രീം",
+      "Movie": "ഛോട്ടാ മുംബൈ",
+      "Nature": "വാഴയില",
+      "Random": "കൈക്കൂലി"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c029",
+    "words": {
+      "People": "Aishwarya Rai",
+      "Location": "Pangong Lake",
+      "Object": "Vadam",
+      "Movie": "Thattathin Marayathu",
+      "Nature": "Spices",
+      "Random": "Tug of War"
+    },
+    "wordsMl": {
+      "People": "ഐശ്വര്യ റായ്",
+      "Location": "പാംഗോങ് തടാകം",
+      "Object": "വടം",
+      "Movie": "തട്ടത്തിൻ മറയത്ത്",
+      "Nature": "സുഗന്ധവ്യഞ്ജനങ്ങൾ",
+      "Random": "വടംവലി"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c030",
+    "words": {
+      "People": "Amitabh Bachchan",
+      "Location": "Dhanushkodi",
+      "Object": "Air India",
+      "Movie": "Sivaji The Boss",
+      "Nature": "Sugar cane",
+      "Random": "Santoor"
+    },
+    "wordsMl": {
+      "People": "അമിതാഭ് ബച്ചൻ",
+      "Location": "ധനുഷ്കോടി",
+      "Object": "എയർ ഇന്ത്യ",
+      "Movie": "ശിവാജി ദി ബോസ്",
+      "Nature": "കരിമ്പ്",
+      "Random": "സന്തൂർ"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c031",
+    "words": {
+      "People": "Mukesh Ambani",
+      "Location": "Ram Mandir",
+      "Object": "House Boat",
+      "Movie": "Punjabi House",
+      "Nature": "Silkworm",
+      "Random": "Lajjavathiye"
+    },
+    "wordsMl": {
+      "People": "മുകേഷ് അംബാനി",
+      "Location": "രാമ മന്ദിർ",
+      "Object": "ഹൗസ് ബോട്ട്",
+      "Movie": "പഞ്ചാബി ഹൗസ്",
+      "Nature": "പട്ടുനൂൽപ്പുഴു",
+      "Random": "ലജ്ജാവതിയേ"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c032",
+    "words": {
+      "People": "Ratan Tata",
+      "Location": "Chandigarh",
+      "Object": "Turban",
+      "Movie": "2018",
+      "Nature": "Red Chilli",
+      "Random": "East India Company"
+    },
+    "wordsMl": {
+      "People": "രത്തൻ ടാറ്റ",
+      "Location": "ചണ്ഡീഗഢ്",
+      "Object": "തലപ്പാവ്",
+      "Movie": "2018",
+      "Nature": "മുളക്",
+      "Random": "ഈസ്റ്റ് ഇന്ത്യ കമ്പനി"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c033",
+    "words": {
+      "People": "Shah Rukh Khan",
+      "Location": "Eden Gardens",
+      "Object": "Kohinoor",
+      "Movie": "Chennai Express",
+      "Nature": "Turmeric",
+      "Random": "Sadhya"
+    },
+    "wordsMl": {
+      "People": "ഷാരൂഖ് ഖാൻ",
+      "Location": "ഈഡൻ ഗാർഡൻസ്",
+      "Object": "കോഹിനൂർ",
+      "Movie": "ചെന്നൈ എക്സ്പ്രസ്",
+      "Nature": "മഞ്ഞൾ",
+      "Random": "സദ്യ"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c034",
+    "words": {
+      "People": "Aamir Khan",
+      "Location": "Chidambaram Stadium",
+      "Object": "Silk",
+      "Movie": "Vaaranam Aayiram",
+      "Nature": "Cumin",
+      "Random": "Achaar"
+    },
+    "wordsMl": {
+      "People": "ആമിർ ഖാൻ",
+      "Location": "ചിദംബരം സ്റ്റേഡിയം",
+      "Object": "പട്ട്",
+      "Movie": "വാരണം ആയിരം",
+      "Nature": "ജീരകം",
+      "Random": "അച്ചാർ"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c035",
+    "words": {
+      "People": "Hrithik Roshan",
+      "Location": "Wankhede Stadium",
+      "Object": "Saree",
+      "Movie": "Ghilli",
+      "Nature": "Tea Leaves",
+      "Random": "Haldi"
+    },
+    "wordsMl": {
+      "People": "ഹൃതിക് റോഷൻ",
+      "Location": "വാങ്കഡെ സ്റ്റേഡിയം",
+      "Object": "സാരി",
+      "Movie": "ഗില്ലി",
+      "Nature": "തേയില",
+      "Random": "ഹൽദി"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c036",
+    "words": {
+      "People": "Kumail Nanjiani",
+      "Location": "Jaipur",
+      "Object": "Lungi",
+      "Movie": "Ghajini",
+      "Nature": "Fennel",
+      "Random": "Chaat"
+    },
+    "wordsMl": {
+      "People": "കുമൈൽ നൻജിയാനി",
+      "Location": "ജയ്പൂർ",
+      "Object": "ലുങ്കി",
+      "Movie": "ഗജിനി",
+      "Nature": "പെരുംജീരകം",
+      "Random": "ചാട്ട്"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c037",
+    "words": {
+      "People": "Dev Patel",
+      "Location": "Ernakulam",
+      "Object": "Closeup Toothpaste",
+      "Movie": "Don",
+      "Nature": "Cashmere Silk",
+      "Random": "Horlicks"
+    },
+    "wordsMl": {
+      "People": "ദേവ് പട്ടേൽ",
+      "Location": "എറണാകുളം",
+      "Object": "ക്ലോസപ്പ് ടൂത്ത്പേസ്റ്റ്",
+      "Movie": "ഡോൺ",
+      "Nature": "കാശ്മീർ പട്ട്",
+      "Random": "ഹോർലിക്സ്"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c038",
+    "words": {
+      "People": "Guru Nanak",
+      "Location": "Trivandrum",
+      "Object": "Cricket",
+      "Movie": "Krrish",
+      "Nature": "Mustard seed",
+      "Random": "Mollywood"
+    },
+    "wordsMl": {
+      "People": "ഗുരു നാനാക്ക്",
+      "Location": "തിരുവനന്തപുരം",
+      "Object": "ക്രിക്കറ്റ്",
+      "Movie": "കൃഷ്",
+      "Nature": "കടുക്",
+      "Random": "മോളിവുഡ്"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c039",
+    "words": {
+      "People": "Vijay",
+      "Location": "Dharamshala Stadium",
+      "Object": "Football",
+      "Movie": "Chakde India",
+      "Nature": "Inji",
+      "Random": "Namaste"
+    },
+    "wordsMl": {
+      "People": "വിജയ്",
+      "Location": "ധർമ്മശാല സ്റ്റേഡിയം",
+      "Object": "ഫുട്ബോൾ",
+      "Movie": "ചക് ദേ ഇന്ത്യ",
+      "Nature": "ഇഞ്ചി",
+      "Random": "നമസ്തേ"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c040",
+    "words": {
+      "People": "Prabhu Deva",
+      "Location": "Tamilnadu",
+      "Object": "Tandoor",
+      "Movie": "Drishyam",
+      "Nature": "Chandanam",
+      "Random": "Bollywood"
+    },
+    "wordsMl": {
+      "People": "പ്രഭു ദേവ",
+      "Location": "തമിഴ്നാട്",
+      "Object": "തന്തൂർ",
+      "Movie": "ദൃശ്യം",
+      "Nature": "ചന്ദനം",
+      "Random": "ബോളിവുഡ്"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c041",
+    "words": {
+      "People": "Ram Charan",
+      "Location": "Chennai",
+      "Object": "Kingfisher Beer",
+      "Movie": "Jab We Met",
+      "Nature": "Karimeen",
+      "Random": "Diwali"
+    },
+    "wordsMl": {
+      "People": "രാം ചരൺ",
+      "Location": "ചെന്നൈ",
+      "Object": "കിംഗ്ഫിഷർ ബിയർ",
+      "Movie": "ജബ് വി മെറ്റ്",
+      "Nature": "കരിമീൻ",
+      "Random": "ദീപാവലി"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c042",
+    "words": {
+      "People": "Kadamattathu Kathanar",
+      "Location": "Cochin",
+      "Object": "Tawa",
+      "Movie": "Enthiran",
+      "Nature": "Monsoon",
+      "Random": "Holi"
+    },
+    "wordsMl": {
+      "People": "കടമറ്റത്ത് കത്തനാർ",
+      "Location": "കൊച്ചി",
+      "Object": "തവ",
+      "Movie": "എന്തിരൻ",
+      "Nature": "മൺസൂൺ",
+      "Random": "ഹോളി"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c043",
+    "words": {
+      "People": "Ganapati",
+      "Location": "Bangalore",
+      "Object": "Halwa",
+      "Movie": "12th Fail",
+      "Nature": "Cobra",
+      "Random": "Vallamkali"
+    },
+    "wordsMl": {
+      "People": "ഗണപതി",
+      "Location": "ബെംഗളൂരു",
+      "Object": "ഹൽവ",
+      "Movie": "12th ഫെയിൽ",
+      "Nature": "മൂർഖൻ",
+      "Random": "വള്ളംകളി"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c044",
+    "words": {
+      "People": "Raj Koothrappali",
+      "Location": "Slums",
+      "Object": "Himalayan Salt",
+      "Movie": "Mowgli",
+      "Nature": "Python",
+      "Random": "Kebab"
+    },
+    "wordsMl": {
+      "People": "രാജ് കൂത്രപ്പാളി",
+      "Location": "ചേരി",
+      "Object": "ഹിമാലയൻ ഉപ്പ്",
+      "Movie": "മൗഗ്ലി",
+      "Nature": "പെരുമ്പാമ്പ്",
+      "Random": "കബാബ്"
+    },
+    "chakraCategory": "Location"
+  },
+  {
+    "id": "c045",
+    "words": {
+      "People": "Russell Peters",
+      "Location": "Shaap",
+      "Object": "Mandi",
+      "Movie": "The Jungle Book",
+      "Nature": "Humidity",
+      "Random": "Samosa"
+    },
+    "wordsMl": {
+      "People": "റസ്സൽ പീറ്റേഴ്സ്",
+      "Location": "ഷാപ്പ്",
+      "Object": "മന്ദി",
+      "Movie": "ദി ജംഗിൾ ബുക്ക്",
+      "Nature": "ഈർപ്പം",
+      "Random": "സമോസ"
+    },
+    "chakraCategory": "Object"
+  },
+  {
+    "id": "c046",
+    "words": {
+      "People": "Romesh Ranganathan",
+      "Location": "Dharavi",
+      "Object": "Auto Rickshaw",
+      "Movie": "Guppy",
+      "Nature": "Tropical",
+      "Random": "Samosa Chaat"
+    },
+    "wordsMl": {
+      "People": "രമേഷ് രംഗനാഥൻ",
+      "Location": "ധാരാവി",
+      "Object": "ഓട്ടോറിക്ഷ",
+      "Movie": "ഗപ്പി",
+      "Nature": "ഉഷ്ണമേഖല",
+      "Random": "സമോസ ചാട്ട്"
+    },
+    "chakraCategory": "Movie"
+  },
+  {
+    "id": "c047",
+    "words": {
+      "People": "Hasan Minhaj",
+      "Location": "Paathalam",
+      "Object": "Bru Coffee",
+      "Movie": "Vikram",
+      "Nature": "Neelakurinji",
+      "Random": "Channa Bhatura"
+    },
+    "wordsMl": {
+      "People": "ഹസൻ മിൻഹാജ്",
+      "Location": "പാതാളം",
+      "Object": "ബ്രൂ കോഫി",
+      "Movie": "വിക്രം",
+      "Nature": "നീലക്കുറിഞ്ഞി",
+      "Random": "ചന്ന ഭട്ടൂര"
+    },
+    "chakraCategory": "Nature"
+  },
+  {
+    "id": "c048",
+    "words": {
+      "People": "Kal Penn",
+      "Location": "Kanchipuram",
+      "Object": "Tiffin Box",
+      "Movie": "Pushpa",
+      "Nature": "Tulasi",
+      "Random": "Al Faham"
+    },
+    "wordsMl": {
+      "People": "കാൽ പെൻ",
+      "Location": "കാഞ്ചീപുരം",
+      "Object": "ടിഫിൻ ബോക്സ്",
+      "Movie": "പുഷ്പ",
+      "Nature": "തുളസി",
+      "Random": "അൽ ഫഹം"
+    },
+    "chakraCategory": "Random"
+  },
+  {
+    "id": "c049",
+    "words": {
+      "People": "Aziz Ansari",
+      "Location": "Munnar",
+      "Object": "Dabba",
+      "Movie": "Chemmeen",
+      "Nature": "Peacock",
+      "Random": "Nepotism"
+    },
+    "wordsMl": {
+      "People": "അസീസ് അൻസാരി",
+      "Location": "മൂന്നാർ",
+      "Object": "ഡബ്ബ",
+      "Movie": "ചെമ്മീൻ",
+      "Nature": "മയിൽ",
+      "Random": "സ്വജനപക്ഷപാതം"
+    },
+    "chakraCategory": "People"
+  },
+  {
+    "id": "c050",
+    "words": {
+      "People": "Dulquer Salmaan",
+      "Location": "Himachal Pradesh",
+      "Object": "Mylanchi",
+      "Movie": "Kilukkam",
+      "Nature": "Grain",
+      "Random": "Fish Nirvana"
+    },
+    "wordsMl": {
+      "People": "ദുൽഖർ സൽമാൻ",
+      "Location": "ഹിമാചൽ പ്രദേശ്",
+      "Object": "മൈലാഞ്ചി",
+      "Movie": "കിലുക്കം",
+      "Nature": "ധാന്യം",
+      "Random": "ഫിഷ് നിർവാണ"
+    },
+    "chakraCategory": "Location"
   }
 ]
